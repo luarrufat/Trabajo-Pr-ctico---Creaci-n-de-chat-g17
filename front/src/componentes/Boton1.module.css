@@ -1,4 +1,4 @@
-.boton-wpp {
+.wpp {
     background-color: #6f82ee;
     color: white;
     padding: 10px 16px;
@@ -7,5 +7,8 @@
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+.wpp :hover{
+    background-color: #5364c4;
 }
 

@@ -1,30 +1,23 @@
 "use client"
 
-import Boton from "@/componentes/Boton"
+import Boton1 from "@/componentes/Boton1"
 import Form from "@/componentes/Form"
+import Input from "@/componentes/Input"
 import Title from "@/componentes/Title"
 export default function loginPage(){
-    
-    function imprimir() {
-        console.log("Mati pro")
-    }
-
-    function imprimirOtraCosa() {
-        console.log("Lu pro")
-    }
-
-    function imprimirOtraCosa2() {
-        console.log("Ju pro")
-    }
 
     return (
         <>
-            <Title texto="Cuestionario del pro"></Title>
-            <h3>Elegi al mas pro</h3>
-            <Boton pro={imprimir}></Boton>
-            <Boton pro={imprimirOtraCosa}></Boton>
-            <Boton pro={imprimirOtraCosa2}></Boton>
-            <Form></Form>
+            <Title texto="Registro"></Title>
+            <h3>Ingresa tus datos</h3>
+            <Input color={"registro"}></Input>
+            <br></br>
+            <Boton1 type={"text"} texto={"Enviar"} color={"wpp"}>Enviar</Boton1>
+            <br></br>
+            <br></br>
+            <Input color={"registro"}></Input>
+            <br></br>
+            <Boton1 type={"text"} texto={"Enviar"} color={"wpp"}></Boton1>
         </>
     )
-}               
+} 
