@@ -76,8 +76,8 @@ app.post('/registro', async function (req, res) {
 
         if (vector.length == 0) {
             realizarQuery(`
-                    INSERT INTO Usuarios (usuario_mail, lista_contactos, contraseña) VALUES
-                        ('${req.body.nombre}','', '${req.body.password}');
+                    INSERT INTO Usuarios (lista_contactos, usuario_mail, contraseña, nombre, foto_perfil) VALUES
+                        ('','${req.body.usuario_mail}','${req.body.contraseña}','${req.body.nombre}','');
                     `)
             res.send({ res: "ok", agregado: true })
         } else {
