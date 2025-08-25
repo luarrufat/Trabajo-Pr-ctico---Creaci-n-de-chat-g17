@@ -4,6 +4,7 @@ import Boton1 from "@/componentes/Boton1"
 import Form from "@/componentes/Form"
 import Input from "@/componentes/Input"
 import Title from "@/componentes/Title"
+import Mensajes from "@/componentes/Mensajes"
 export default function loginPage(){
 
     return (
