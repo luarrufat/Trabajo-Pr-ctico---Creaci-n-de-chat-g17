@@ -3,6 +3,7 @@
 import Boton from "@/componentes/Boton"
 import Form from "@/componentes/Form"
 import Title from "@/componentes/Title"
+import Mensajes from "@/componentes/Mensajes"
 export default function loginPage(){
     
     function imprimir() {
@@ -25,6 +26,8 @@ export default function loginPage(){
             <Boton pro={imprimirOtraCosa}></Boton>
             <Boton pro={imprimirOtraCosa2}></Boton>
             <Form></Form>
+
+            <Mensajes texto={"hola como estas"}></Mensajes>
         </>
     )
 }               
