@@ -8,4 +8,7 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+.wpp :hover{
+    background-color: #5364c4;
+}
 
