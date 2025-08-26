@@ -3,7 +3,7 @@ import clsx from "clsx";
 import styles from "@/componentes/Boton1.module.css"
 export default function Boton1(props) {
     return (
-        <button onClick={props.onClick} type={props.type} className={
+        <button onClick={props.onClick} type={props.type}  className={
             clsx(
                 {
                     [styles.wpp]: props.color == "wpp",  
@@ -12,3 +12,10 @@ export default function Boton1(props) {
         }>{props.texto}</button>
     );
 }
+
+
+
+
+
+
+
