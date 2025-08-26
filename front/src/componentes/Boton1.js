@@ -1,8 +1,14 @@
 "use client";
-
-export default function Boton(props) {
+import clsx from "clsx";
+import styles from "@/componentes/Boton1.module.css"
+export default function Boton1(props) {
     return (
-        <button className="boton-wpp" onClick={props.onClick} type={props.type} color={props.color}>
-        </button>
+        <button onClick={props.onClick} type={props.type} className={
+            clsx(
+                {
+                    [styles.wpp]: props.color == "wpp",
+                }
+            )
+        }>{props.texto}</button>
     );
 }

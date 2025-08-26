@@ -1,7 +1,6 @@
 "use client"
 
-import Boton from "@/componentes/Boton"
-import Form from "@/componentes/Form"
+import Boton1 from "@/componentes/Boton1"
 import Title from "@/componentes/Title"
 import Mensajes from "@/componentes/Mensajes"
 export default function loginPage(){
@@ -20,14 +19,9 @@ export default function loginPage(){
 
     return (
         <>
-            <Title texto="Cuestionario del pro"></Title>
-            <h3>Elegi al mas pro</h3>
-            <Boton pro={imprimir}></Boton>
-            <Boton pro={imprimirOtraCosa}></Boton>
-            <Boton pro={imprimirOtraCosa2}></Boton>
-            <Form></Form>
-
-            <Mensajes texto={"hola como estas"}></Mensajes>
+            <Title texto="Registrate"></Title>
+            <h3>Ingesa tus datos</h3>
+            <Boton1 type={"text"} color={"wpp"}></Boton1>
         </>
     )
 }               
