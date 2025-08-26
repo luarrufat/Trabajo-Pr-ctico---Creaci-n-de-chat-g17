@@ -1,11 +1,10 @@
 "use client"
 
-import Boton2 from "@/componentes/Boton2";
+
 import Input from "@/componentes/Input";
 import Title from "@/componentes/Title";
 import { use, useEffect, useState } from "react";
 import clsx from "clsx";
-import styles from "@/componentes/Boton2.module.css"
 import { useRouter } from "next/navigation";
 
 export default function loginPage() {
@@ -51,7 +50,7 @@ export default function loginPage() {
     return (
         <>
             <Title texto="Contador"></Title>
-            <Boton2 texto="Sumar y restar" onClick={checkeado} color={color}></Boton2>
+
             <Input type={"checkbox"} respuesta={a}></Input>
             <h2>{cuenta}</h2>
             <br></br>

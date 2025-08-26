@@ -8,7 +8,7 @@ export default function Boton(props) {
             clsx(
                 {
                     [styles.wpp]: props.color == "wpp",
-                    
+
                 }
             )
         }>{props.texto}</button>

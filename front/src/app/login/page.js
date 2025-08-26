@@ -19,6 +19,8 @@ export default function loginPage(){
             <Input color={"registro"}></Input>
             <br></br>
             <Boton1 type={"text"} texto={"Enviar"} color={"wpp"}></Boton1>
+            <br></br>
+            <Mensajes texto={"Mensaje"} color={"mensajes"}></Mensajes>
         </>
     )
 } 
