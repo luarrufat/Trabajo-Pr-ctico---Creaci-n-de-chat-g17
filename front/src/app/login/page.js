@@ -5,6 +5,7 @@ import Form from "@/componentes/Form"
 import Input from "@/componentes/Input"
 import Title from "@/componentes/Title"
 import Mensajes from "@/componentes/Mensajes"
+import Contactos from "@/componentes/Contactos"
 export default function loginPage(){
 
     return (
@@ -21,6 +22,8 @@ export default function loginPage(){
             <Boton1 type={"text"} texto={"Enviar"} color={"wpp"}></Boton1>
             <br></br>
             <Mensajes texto={"Mensaje"} color={"mensajes"}></Mensajes>
+            <br></br>
+            <Contactos texto={"Nombre del contacto"} color={"contactos"}></Contactos>
         </>
     )
 } 
