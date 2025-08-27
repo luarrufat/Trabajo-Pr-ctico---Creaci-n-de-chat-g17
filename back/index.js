@@ -76,10 +76,10 @@ app.post('/registro', async function (req, res) {
 
         if (vector.length == 0) {
             realizarQuery(`
-                    INSERT INTO Usuarios (lista_contactos, usuario_mail, contraseña, nombre, foto_perfil) VALUES
-                        ('','${req.body.usuario_mail}','${req.body.contraseña}','${req.body.nombre}','');
-                    `)
-            res.send({ res: "ok", agregado: true })
+                INSERT INTO Usuarios (usuario_mail, password, nombre, foto_perfil) VALUES
+                    ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','');
+            `)
+            
         } else {
             res.send({ res: "Ya existe ese dato", agregado: false })
         }
