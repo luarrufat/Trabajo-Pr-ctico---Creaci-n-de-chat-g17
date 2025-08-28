@@ -1,12 +1,12 @@
 "use client"
 
-import Boton1 from "@/componentes/Boton1";
 import Input from "@/componentes/Input";
 import Title from "@/componentes/Title";
+import Boton1 from "@/componentes/Boton1";
 import { use, useEffect, useState } from "react";
 import clsx from "clsx";
-import styles from "@/componentes/Boton1.module.css"
 import { useRouter } from "next/navigation";
+import styles from "@/componentes/Boton1.module.css"
 
 export default function loginPage() {
     const [cuenta, setCuenta] = useState(0);
