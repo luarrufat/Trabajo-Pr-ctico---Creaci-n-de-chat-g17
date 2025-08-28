@@ -42,7 +42,7 @@ app.post('/login', async function (req, res) {
     try {
         const resultado = await realizarQuery(`
             SELECT * FROM Usuarios 
-            WHERE usuario_mail = '${req.body.usuario_mail}' AND contraseña = '${req.body.contraseña}'
+            WHERE usuario_mail = '${req.body.usuario_mail}' AND password = '${req.body.contraseña}'
         `);
 
         if (resultado.length > 0) {

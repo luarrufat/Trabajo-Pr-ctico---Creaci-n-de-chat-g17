@@ -35,16 +35,60 @@ export default function LoginPage() {
     agregarUsuarioRegistro(datos)
   }
 
+  /*Login*/
+  function obtenerDatos() {
+    let datos = { nombre, password: contraseña, usuario_mail: usuarioMail }
+    login(datos)
+  }
+
+  async function login(datos) {
+    try {
+      const response = await fetch("http://localhost:4000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(datos),
+      });
+
+      console.log(response);
+
+      const result = await response.json();
+      console.log(result);
+
+      if (result.ok) {
+        localStorage.setItem('ID', result.id);
+        if (result.res === "ok") {
+        router.push("/contador")
+      } else {
+          location.href = 'index.html';
+        }
+
+      } else {
+        alert(result.mensaje)
+      }
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+
   return (
     <>
-      <Title texto="Registro" />
-      <h3>Ingresa tus datos</h3>
-      <br />
-      <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) =>setUsuarioMail( event.target.value)}></Input>
+      <Title texto="Inicia Sesión" /><h3></h3><br />
+      <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
       <br /><br />
-      <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) =>setContraseña( event.target.value)}></Input>
+      <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
       <br /><br />
-      <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"nombre"} onChange={(event) =>setNombre( event.target.value)}></Input>
+      <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatos}>Enviar</Boton1>
+      <br></br>
+      <br></br>
+      <hr></hr>
+      <Title texto="Registro" /><h3>Ingresa tus datos</h3><br />
+      <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
+      <br /><br />
+      <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
+      <br /><br />
+      <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"nombre"} onChange={(event) => setNombre(event.target.value)}></Input>
       <br /><br />
       <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatosRegistro}>Enviar</Boton1>
     </>
