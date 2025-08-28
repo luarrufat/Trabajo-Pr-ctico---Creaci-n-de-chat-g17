@@ -5,6 +5,7 @@ import Input from "@/componentes/Input"
 import Title from "@/componentes/Title"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import styles from "./page.module.css"
 
 export default function LoginPage() {
   const [nombre, setNombre] = useState("")
@@ -37,7 +38,7 @@ export default function LoginPage() {
 
   /*Login*/
   function obtenerDatos() {
-    let datos = { nombre, password: contraseña, usuario_mail: usuarioMail }
+    let datos = { contraseña, usuario_mail: usuarioMail }
     login(datos)
   }
 
@@ -58,10 +59,8 @@ export default function LoginPage() {
 
       if (result.ok) {
         localStorage.setItem('ID', result.id);
-        if (result.res === "ok") {
-        router.push("/contador")
-      } else {
-          location.href = 'index.html';
+        if (result.ok === true) {
+          router.push("/contador")
         }
 
       } else {
@@ -74,23 +73,28 @@ export default function LoginPage() {
 
   return (
     <>
-      <Title texto="Inicia Sesión" /><h3></h3><br />
-      <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
-      <br /><br />
-      <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
-      <br /><br />
-      <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatos}>Enviar</Boton1>
-      <br></br>
-      <br></br>
-      <hr></hr>
-      <Title texto="Registro" /><h3>Ingresa tus datos</h3><br />
-      <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
-      <br /><br />
-      <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
-      <br /><br />
-      <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"nombre"} onChange={(event) => setNombre(event.target.value)}></Input>
-      <br /><br />
-      <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatosRegistro}>Enviar</Boton1>
+      <div className={styles.section}>
+        <div className={styles.container}>
+          <Title texto="Inicia Sesión" color={"registro"} /><h3></h3><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
+          <br /><br />
+          <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
+          <br /><br />
+          <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatos}>Enviar</Boton1>
+        </div>
+        <br></br>
+        <br></br>
+        <div className={styles.container}>
+          <Title texto="Registro" color={"registro"}/><h3></h3><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
+          <br /><br />
+          <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
+          <br /><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"nombre"} onChange={(event) => setNombre(event.target.value)}></Input>
+          <br /><br />
+          <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatosRegistro}>Enviar</Boton1>
+        </div>
+      </div>
     </>
   )
 }
