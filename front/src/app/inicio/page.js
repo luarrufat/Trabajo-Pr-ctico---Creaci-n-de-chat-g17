@@ -1,56 +1,47 @@
 "use client"
 
-import Input from "@/componentes/Input"
+import { useState, useEffect } from "react"
 import Title from "@/componentes/Title"
+import Input from "@/componentes/Input"
+import Contacto from "@/componentes/Contactos"
 
-export default function inicioPage() {
-    let contacts = [
-        {
-            nombre: "Emi",
-            apellido: "Gaetani",
-            usuario_mail: "egaetani@gmail",
-            password: "sarmiento01",
-            foto_perfil: "",
-            descripción: "hola",
-        },
-        {
-            nombre: "Lu",
-            apellido: "Arrufat",
-            usuario_mail: "larrufat@gmail",
-            password: "juani",
-            foto_perfil: "",
-            descripción: "chau",
-        },
-        {
-            nombre: "Ju",
-            apellido: "Zuran",
-            usuario_mail: "jzuran@gmail",
-            password: "juju123",
-            foto_perfil: "",
-            descripción: "adios",
+export default function InicioPage() {
+  const [contacts, setContacts] = useState([])
 
-        },
-    ]
+  // por ahora el id lo ponemos fijo (ej: usuario con id 1)
+  const usuarioId = 1  
 
-      function mostrarContactos() {
-        let lista = []
-        for (let i = 0; i < contacts.length; i++) {
-            lista.push(
-                <li>
-                    {contacts[i].nombre} {contacts[i].apellido}
-                </li>
-            )
-        }
-        return lista
+  useEffect(() => {
+    async function traerChats() {
+      try {
+        const response = await fetch("http://localhost:4000/chats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_usuario: usuarioId })
+        })
+        const data = await response.json()
+        console.log(data)
+        setContacts(data)  // guardamos los chats en el estado
+      } catch (error) {
+        console.error("Error al traer chats:", error)
+      }
     }
 
-    return (
-        <>
-            <Title texto="Chats" />
-            <Input type="text" placeholder="Buscar" id="buscar" />
-            <ol>
-                {mostrarContactos()}
-            </ol>
-        </>
-    )
+    traerChats()
+  }, [])
+
+  return (
+    <>
+      <Title texto="Chats" />
+      <Input type="text" placeholder="Buscar" id="buscar" />
+
+      <ol>
+        {contacts.map((chat) => (
+          <li key={chat.ID}>
+            <Contacto nombre={chat.nombre} color="contactos" />
+          </li>
+        ))}
+      </ol>
+    </>
+  )
 }

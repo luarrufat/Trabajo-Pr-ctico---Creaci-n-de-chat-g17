@@ -83,7 +83,7 @@ app.post('/registro', async function (req, res) {
         } else {
             res.send({ res: "Ya existe ese dato", agregado: false })
         }
-        
+
 
     } catch (e) {
         res.status(500).send({
@@ -93,3 +93,23 @@ app.post('/registro', async function (req, res) {
         });
     }
 })
+
+app.post("/chats", async function (req, res) {
+    try {
+        const resultado = await realizarQuery(`
+            SELECT Chats.ID, Chats.nombre 
+            FROM Chats
+            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
+            WHERE UsuariosPorChat.id_usuario = ${req.body.id_usuario}
+
+        `);
+
+        res.send(resultado);
+    } catch (error) {
+        res.send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
