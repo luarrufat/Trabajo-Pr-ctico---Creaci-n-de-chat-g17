@@ -113,3 +113,25 @@ app.post("/chats", async function (req, res) {
         });
     }
 });
+
+//agregar chats
+
+app.post('/agregarChat', async function (req, res) {
+  try {
+    console.log(req.body);
+
+    await realizarQuery(`
+      INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo) 
+      VALUES ('${req.body.es_grupo}','${req.body.foto}','${req.body.nombre}','${req.body.descripcion_grupo}')
+    `);
+
+    res.send({ res: "ok", agregado: true });
+    
+  } catch (e) {
+    res.status(500).send({
+      agregado: false,
+      mensaje: "Error en el servidor",
+      error: e.message
+    });
+  }
+});

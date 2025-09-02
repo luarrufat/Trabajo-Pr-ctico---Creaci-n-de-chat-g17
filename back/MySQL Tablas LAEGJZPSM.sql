@@ -16,7 +16,6 @@ CREATE TABLE Usuarios(
 
 CREATE TABLE Chats (
     ID INT NOT NULL AUTO_INCREMENT,
-    historial INT,
     es_grupo BOOLEAN,
     foto VARCHAR(255),
     nombre VARCHAR(255),

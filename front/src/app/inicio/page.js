@@ -4,13 +4,14 @@ import { useState, useEffect } from "react"
 import Title from "@/componentes/Title"
 import Input from "@/componentes/Input"
 import Contacto from "@/componentes/Contactos"
+import BotonRedondo from "@/componentes/BotonRedondo"
 
 export default function InicioPage() {
-  const [contacts, setContacts] = useState([])
-
-  // por ahora el id lo ponemos fijo (ej: usuario con id 1)
-  const usuarioId = 1  
-
+  const [es_grupo, setEs_grupo] = useState("")
+  const [foto, setFoto] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [descripcion_grupo, setDescripcion_grupo] = useState("");
+ 
   useEffect(() => {
     async function traerChats() {
       try {
@@ -30,6 +31,34 @@ export default function InicioPage() {
     traerChats()
   }, [])
 
+  async function obtenerDatos() {
+    let datos = {
+      es_grupo: es_grupo,
+      foto: foto,
+      nombre: nombre,
+      descripcion_grupo: descripcion_grupo
+    }
+    agregarChat(datos)
+  }
+  async function agregarChat(datos) {
+    console.log("Click en botón")
+    try {
+      response = await fetch("http://localhost:4000/agregarChat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(datos),
+      });
+      console.log(response)
+      let result = await response.json()
+      console.log(result)
+
+    } catch (error) {
+      console.log("Error", error);
+    }
+  }
+
   return (
     <>
       <Title texto="Chats" />
@@ -42,6 +71,9 @@ export default function InicioPage() {
           </li>
         ))}
       </ol>
+      <BotonRedondo texto="+" onClick={obtenerDatos} />
+
+
     </>
   )
 }

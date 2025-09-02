@@ -40,6 +40,7 @@ export default function loginPage() {
             console.log("Error", error);
         }
     }
+    
     return (
         <>  
             <Title texto="Registro"></Title>
