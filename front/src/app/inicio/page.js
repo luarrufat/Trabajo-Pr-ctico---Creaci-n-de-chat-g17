@@ -5,13 +5,16 @@ import Title from "@/componentes/Title"
 import Input from "@/componentes/Input"
 import Contacto from "@/componentes/Contactos"
 import BotonRedondo from "@/componentes/BotonRedondo"
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 export default function InicioPage() {
   const [es_grupo, setEs_grupo] = useState("")
   const [foto, setFoto] = useState("");
   const [nombre, setNombre] = useState("");
   const [descripcion_grupo, setDescripcion_grupo] = useState("");
- 
+  const [contacts, setContacts] = useState([])
+
   useEffect(() => {
     async function traerChats() {
       try {
@@ -62,17 +65,26 @@ export default function InicioPage() {
   return (
     <>
       <Title texto="Chats" />
-      <Input type="text" placeholder="Buscar" id="buscar" />
+      <Input type="text" placeholder="Buscar" id="buscar" color="registro"/>
 
       <ol>
-        {contacts.map((chat) => (
+        {contacts.length != 0 && contacts.map((chat) => (
           <li key={chat.ID}>
-            <Contacto nombre={chat.nombre} color="contactos" />
+            <Contacto nombre={chat.nombre} color="contactos"/>
           </li>
         ))}
       </ol>
-      <BotonRedondo texto="+" onClick={obtenerDatos} />
+      
+  
+      <Popup trigger={<BotonRedondo texto="+"  />}>
+        <div  className="posicionPopUp">
+          Popup content here !!
+          <input placeholder="INserte nombre:"></input>
+          
+        </div>
 
+      </Popup>
+  
 
     </>
   )
