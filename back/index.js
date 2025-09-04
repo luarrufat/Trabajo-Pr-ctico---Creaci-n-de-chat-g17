@@ -118,12 +118,29 @@ app.post("/chats", async function (req, res) {
 
 app.post('/agregarChat', async function (req, res) {
   try {
+    let idChat = 0;
     console.log(req.body);
+    if (req.body.es_grupo == true) {
+        
+        idChat = await realizarQuery(`
+        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo) 
+        VALUES ('${req.body.es_grupo}','${req.body.foto}','${req.body.nombre}','${req.body.descripcion_grupo}')
+        `);
 
-    await realizarQuery(`
-      INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo) 
-      VALUES ('${req.body.es_grupo}','${req.body.foto}','${req.body.nombre}','${req.body.descripcion_grupo}')
-    `);
+    for(let i = 0; i < users.length; i++ ){
+        idChat = await realizarQuery(`
+        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+        VALUES ('${req.body.id_chat}','${req.body.id_usuario}')
+        `);
+    }
+
+    } else {
+        idChat = await realizarQuery(`
+        INSERT INTO Chats (es_grupo) 
+        VALUES ('${req.body.es_grupo}')
+        `);
+    }
+
 
     res.send({ res: "ok", agregado: true });
     

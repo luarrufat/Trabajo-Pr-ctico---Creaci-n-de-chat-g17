@@ -7,6 +7,7 @@ import Contacto from "@/componentes/Contactos"
 import BotonRedondo from "@/componentes/BotonRedondo"
 import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
+import Boton1 from "@/componentes/Boton1"
 
 export default function InicioPage() {
   const [es_grupo, setEs_grupo] = useState("")
@@ -14,6 +15,8 @@ export default function InicioPage() {
   const [nombre, setNombre] = useState("");
   const [descripcion_grupo, setDescripcion_grupo] = useState("");
   const [contacts, setContacts] = useState([])
+  const [esGrupo, setEsGrupo] = useState(false);
+  const [idUsuario, setIdUsuario] = useState(1)
 
   useEffect(() => {
     async function traerChats() {
@@ -21,7 +24,7 @@ export default function InicioPage() {
         const response = await fetch("http://localhost:4000/chats", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_usuario: usuarioId })
+          body: JSON.stringify({ id_usuario: idUsuario })
         })
         const data = await response.json()
         console.log(data)
@@ -62,6 +65,18 @@ export default function InicioPage() {
     }
   }
 
+  function handleCheckbox(event){
+        setEsGrupo(event.target.checked)
+    }
+
+    function checkeado() {
+        if (esGrupo) {
+
+        } else {
+
+        } 
+    }
+
   return (
     <>
       <Title texto="Chats" />
@@ -78,9 +93,17 @@ export default function InicioPage() {
   
       <Popup trigger={<BotonRedondo texto="+"  />}>
         <div  className="posicionPopUp">
-          Popup content here !!
-          <input placeholder="INserte nombre:"></input>
-          
+          Añadir nuevo chat
+          <Input type={"checkbox"} onChange={handleCheckbox}>Clikee si desea crear un grupo</Input>
+          {esGrupo == true ? 
+          <>
+            <input placeholder="Inserte nombre:"></input>
+            <input placeholder="Inserte foto (URL):"></input>
+            <input placeholder="Inserte descripcion:"></input>
+            <Boton1 onclick={checkeado()} texto={"Agregar"} color={"wpp"}></Boton1>
+          </>
+          :
+          <h1>HOLA</h1>}
         </div>
 
       </Popup>
