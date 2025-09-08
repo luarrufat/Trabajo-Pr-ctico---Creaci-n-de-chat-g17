@@ -116,39 +116,45 @@ app.post("/chats", async function (req, res) {
 
 //agregar chats
 
-app.post('/agregarChat', async function (req, res) {
+app.post("/agregarChat", async function (req, res) {
   try {
-    let idChat = 0;
-    console.log(req.body);
-    if (req.body.es_grupo == true) {
-        
-        idChat = await realizarQuery(`
-        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo) 
-        VALUES ('${req.body.es_grupo}','${req.body.foto}','${req.body.nombre}','${req.body.descripcion_grupo}')
-        `);
+    let chatId;
 
-    for(let i = 0; i < users.length; i++ ){
-        idChat = await realizarQuery(`
-        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
-        VALUES ('${req.body.id_chat}','${req.body.id_usuario}')
-        `);
-    }
-
+    if (req.body.es_grupo == 1) {
+      // Insertar grupo
+      const resultado = await realizarQuery(`
+        INSERT INTO Chats (historial, es_grupo, foto, nombre, descripcion_grupo)
+        VALUES ('', 1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
+      `);
+      chatId = resultado.insertId;
     } else {
-        idChat = await realizarQuery(`
-        INSERT INTO Chats (es_grupo) 
-        VALUES ('${req.body.es_grupo}')
-        `);
+      // Insertar chat individual (campos vacíos salvo es_grupo = 0)
+      const resultado = await realizarQuery(`
+        INSERT INTO Chats (historial, es_grupo, foto, nombre, descripcion_grupo)
+        VALUES ('', 0, NULL, NULL, NULL)
+      `);
+      chatId = resultado.insertId;
+
+      // obtener id del otro usuario por mail
+      const usuarios = await realizarQuery(`
+        SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
+      `);
+      const otroUsuarioId = usuarios[0].ID;
+
+      // vincular usuarios al chat
+      await realizarQuery(`
+        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+        VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
+      `);
     }
 
-
-    res.send({ res: "ok", agregado: true });
-    
-  } catch (e) {
+    res.send({ ok: true, id_chat: chatId });
+  } catch (error) {
     res.status(500).send({
-      agregado: false,
+      ok: false,
       mensaje: "Error en el servidor",
-      error: e.message
+      error: error.message,
     });
   }
 });
+

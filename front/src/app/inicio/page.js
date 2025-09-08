@@ -18,24 +18,46 @@ export default function InicioPage() {
   const [esGrupo, setEsGrupo] = useState(false);
   const [idUsuario, setIdUsuario] = useState(1)
 
-  useEffect(() => {
-    async function traerChats() {
-      try {
-        const response = await fetch("http://localhost:4000/chats", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_usuario: idUsuario })
-        })
-        const data = await response.json()
-        console.log(data)
-        setContacts(data)  // guardamos los chats en el estado
-      } catch (error) {
-        console.error("Error al traer chats:", error)
-      }
-    }
 
-    traerChats()
-  }, [])
+  function handleCheckbox(event) {
+    setEsGrupo(event.target.checked);
+  }
+
+  async function crearGrupo() {
+    const datos = {
+      es_grupo: 1,
+      nombre: document.getElementById("nombreGrupo").value,
+      foto: document.getElementById("fotoGrupo").value,
+      descripcion_grupo: document.getElementById("descripcionGrupo").value,
+      id_usuario: localStorage.getItem("idUsuario"), // usuario logueado
+    };
+
+    const response = await fetch("http://localhost:4000/agregarChat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+
+    const result = await response.json();
+    console.log(result);
+  }
+
+  async function crearChatIndividual() {
+    const datos = {
+      es_grupo: 0,
+      mail: document.getElementById("mailUsuario").value,
+      id_usuario: localStorage.getItem("idUsuario"), // usuario logueado
+    };
+
+    const response = await fetch("http://localhost:4000/agregarChat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+
+    const result = await response.json();
+    console.log(result);
+  }
 
   async function obtenerDatos() {
     let datos = {
@@ -65,49 +87,54 @@ export default function InicioPage() {
     }
   }
 
-  function handleCheckbox(event){
-        setEsGrupo(event.target.checked)
-    }
+  function handleCheckbox(event) {
+    setEsGrupo(event.target.checked)
+  }
 
-    function checkeado() {
-        if (esGrupo) {
-
-        } else {
-
-        } 
-    }
 
   return (
     <>
       <Title texto="Chats" />
-      <Input type="text" placeholder="Buscar" id="buscar" color="registro"/>
+      <Input type="text" placeholder="Buscar" id="buscar" color="registro" />
 
       <ol>
         {contacts.length != 0 && contacts.map((chat) => (
           <li key={chat.ID}>
-            <Contacto nombre={chat.nombre} color="contactos"/>
+            <Contacto nombre={chat.nombre} color="contactos" />
           </li>
         ))}
       </ol>
-      
-  
-      <Popup trigger={<BotonRedondo texto="+"  />}>
-        <div  className="posicionPopUp">
-          Añadir nuevo chat
-          <Input type={"checkbox"} onChange={handleCheckbox}>Clikee si desea crear un grupo</Input>
-          {esGrupo == true ? 
-          <>
-            <input placeholder="Inserte nombre:"></input>
-            <input placeholder="Inserte foto (URL):"></input>
-            <input placeholder="Inserte descripcion:"></input>
-            <Boton1 onclick={checkeado()} texto={"Agregar"} color={"wpp"}></Boton1>
-          </>
-          :
-          <h1>HOLA</h1>}
-        </div>
+      <Popup trigger={<BotonRedondo texto="+" />}>
+        <div className="posicionPopUp">
+          <p>Crear un nuevo chat</p>
 
+
+
+          {esGrupo ? (
+            <>
+              <label>
+                <Input type="checkbox" onChange={handleCheckbox} />
+                Clikee si desea crear un chat individual
+              </label>
+              <input placeholder="Nombre del grupo" id="nombreGrupo" />
+              <input placeholder="Foto (URL)" id="fotoGrupo" />
+              <input placeholder="Descripción" id="descripcionGrupo" />
+              <Boton1 onClick={crearGrupo} texto="Agregar grupo" color="wpp" />
+            </>
+          ) : (
+            <>
+              <label>
+                <Input type="checkbox" onChange={handleCheckbox} />
+                Clikee si desea crear un grupo
+              </label>
+              <input placeholder="Mail del contacto" id="mailUsuario" />
+              <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
+            </>
+          )}
+        </div>
       </Popup>
-  
+
+
 
     </>
   )
