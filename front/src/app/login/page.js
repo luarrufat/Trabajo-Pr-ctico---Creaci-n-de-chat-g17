@@ -3,56 +3,98 @@
 import Boton1 from "@/componentes/Boton1"
 import Input from "@/componentes/Input"
 import Title from "@/componentes/Title"
-import Mensajes from "@/componentes/Mensajes"
-import Link from 'next/link';
-export default function loginPage() {
-    const [nombre, setNombre] = useState("");
-    const [contraseña, setContraseña] = useState("");
-    function obtenerDatosRegistro(event) {
-        setContraseña(event.target.value);
-        setNombre(event.target.value);
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import styles from "./page.module.css"
 
-        let datos = {
-            nombre: nombre,
-            password: contraseña
-        }
-        agregarUsuarioRegistro(datos)
+export default function LoginPage() {
+  const [nombre, setNombre] = useState("")
+  const [contraseña, setContraseña] = useState("")
+  const [usuarioMail, setUsuarioMail] = useState("")
+  const router = useRouter()
+
+  async function agregarUsuarioRegistro(datos) {
+    try {
+      const response = await fetch("http://localhost:4000/registro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      })
+      const result = await response.json()
+      console.log(result)
+
+      if (result.res === "ok") {
+        router.push("/contador")
+      }
+    } catch (error) {
+      console.log("Error", error)
     }
+  }
 
-    async function agregarUsuarioRegistro(datos) {
-        try {
-            response = await fetch("http://localhost:4000/registro", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(datos),
-            });
-            console.log(response)
-            let result = await response.json()
-            console.log(result)
+  function obtenerDatosRegistro() {
+    let datos = { nombre, password: contraseña, usuario_mail: usuarioMail }
+    agregarUsuarioRegistro(datos)
+  }
 
-            if (result.res == "ok") {
-                <Link href={"/contador"}></Link>
-            }
+  /*Login*/
+  function obtenerDatos() {
+    let datos = { contraseña, usuario_mail: usuarioMail }
+    login(datos)
+  }
 
-        } catch (error) {
-            console.log("Error", error);
+  async function login(datos) {
+    try {
+      const response = await fetch("http://localhost:4000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(datos),
+      });
+
+      console.log(response);
+
+      const result = await response.json();
+      console.log(result);
+
+      if (result.ok) {
+        localStorage.setItem('ID', result.id);
+        if (result.ok === true) {
+          router.push("/contador")
         }
+
+      } else {
+        alert(result.mensaje)
+      }
+    } catch (error) {
+      console.error("Error", error);
     }
-    
-    return (
-        <>  
-            <Title texto="Registro"></Title>
-            <h3>Ingresa tus datos</h3>
-            <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"usuario_mail"}></Input>
-            <br></br>
-            <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} > Enviar</Boton1>
-            <br></br>
-            <br></br>
-            <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"usuario_mail"}></Input>
-            <br></br>
-            <Boton1 type={"text"} texto={"Enviar"} color={"wpp"}></Boton1>
-        </>
-    )
-} 
+  }
+
+  return (
+    <>
+      <div className={styles.section}>
+        <div className={styles.container}>
+          <Title texto="Inicia Sesión" color={"registro"} /><h3></h3><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
+          <br /><br />
+          <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
+          <br /><br />
+          <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatos}>Enviar</Boton1>
+        </div>
+        <br></br>
+        <br></br>
+        <div className={styles.container}>
+          <Title texto="Registro" color={"registro"}/><h3></h3><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su mail"} id={"usuario_mail"} onChange={(event) => setUsuarioMail(event.target.value)}></Input>
+          <br /><br />
+          <Input color={"registro"} type={"password"} placeholder={"Ingrese su contraseña"} id={"contraseña"} onChange={(event) => setContraseña(event.target.value)}></Input>
+          <br /><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"nombre"} onChange={(event) => setNombre(event.target.value)}></Input>
+          <br /><br />
+          <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatosRegistro}>Enviar</Boton1>
+        </div>
+      </div>
+    </>
+  )
+}

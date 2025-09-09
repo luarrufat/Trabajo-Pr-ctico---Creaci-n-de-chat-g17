@@ -42,7 +42,7 @@ app.post('/login', async function (req, res) {
     try {
         const resultado = await realizarQuery(`
             SELECT * FROM Usuarios 
-            WHERE usuario_mail = '${req.body.usuario_mail}' AND contraseña = '${req.body.contraseña}'
+            WHERE usuario_mail = '${req.body.usuario_mail}' AND password = '${req.body.contraseña}'
         `);
 
         if (resultado.length > 0) {
@@ -76,10 +76,10 @@ app.post('/registro', async function (req, res) {
 
         if (vector.length == 0) {
             realizarQuery(`
-                    INSERT INTO Usuarios (lista_contactos, usuario_mail, contraseña, nombre, foto_perfil) VALUES
-                        ('','${req.body.usuario_mail}','${req.body.contraseña}','${req.body.nombre}','');
-                    `)
-            res.send({ res: "ok", agregado: true })
+                INSERT INTO Usuarios (usuario_mail, password, nombre, foto_perfil) VALUES
+                    ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','');
+            `)
+            
         } else {
             res.send({ res: "Ya existe ese dato", agregado: false })
         }

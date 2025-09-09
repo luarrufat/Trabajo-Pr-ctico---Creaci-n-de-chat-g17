@@ -7,8 +7,7 @@ export default function Input(props) {
            <input type={props.type} onChange={props.onChange} placeholder={props.placeholder} id={props.id} className={
             clsx(
                 {
-                    [styles.registro]: props.color == "registro",
-                    
+                    [styles.registro]: props.color == "registro",   
                 }
             )
         }></input>
