@@ -94,4 +94,28 @@ app.post('/registro', async function (req, res) {
     }
 })
 
+app.get('/contacto', async (req, res) => {
+    try {
+        const contactos = await realizarQuery("SELECT nombre FROM Chats ORDER BY RAND() LIMIT 1;");
+        if (contactos.length === 0) {
+            return res.send({ ok: false, mensaje: "No hay contacto" });
+        }
+        const contacto = contactos[0];
+
+        res.send({
+            ok: true,
+            contacto: {
+                id: contacto.ID,
+                nombre: contacto.nombre,
+            }
+        });
+
+    } catch (error) {
+        res.status(500).send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
 
