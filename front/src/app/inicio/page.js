@@ -13,10 +13,12 @@ export default function InicioPage() {
   const [es_grupo, setEs_grupo] = useState("")
   const [foto, setFoto] = useState("");
   const [nombre, setNombre] = useState("");
-  const [descripcion_grupo, setDescripcion_grupo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [contacts, setContacts] = useState([])
   const [esGrupo, setEsGrupo] = useState(false);
   const [idUsuario, setIdUsuario] = useState(1)
+  const [mail, setMail] = useState("")
+  const [masMails, setMasMails] = useState(false)
 
 
   function handleCheckbox(event) {
@@ -45,7 +47,7 @@ export default function InicioPage() {
   async function crearChatIndividual() {
     const datos = {
       es_grupo: 0,
-      mail: document.getElementById("mailUsuario").value,
+      mail: mail,
       id_usuario: localStorage.getItem("idUsuario"), // usuario logueado
     };
 
@@ -68,6 +70,7 @@ export default function InicioPage() {
     }
     agregarChat(datos)
   }
+  
   async function agregarChat(datos) {
     console.log("Click en botón")
     try {
@@ -92,6 +95,10 @@ export default function InicioPage() {
   }
 
 
+  function agregarContactoGrupo() {
+    setMasMails(true)
+  }
+
   return (
     <>
       <Title texto="Chats" />
@@ -113,10 +120,19 @@ export default function InicioPage() {
                 <Input type="checkbox" onChange={handleCheckbox} />
                 Clikee si desea crear un chat individual
               </label>
-              <input placeholder="Nombre del grupo" id="nombreGrupo" />
-              <input placeholder="Foto (URL)" id="fotoGrupo" />
-              <input placeholder="Descripción" id="descripcionGrupo" />
-              <Boton1 onClick={crearGrupo} texto="Agregar grupo" color="wpp" />
+
+              <Input placeholder="Nombre del grupo" onChange={(event) => {setNombre(event.target.value)}}/>
+              <Input placeholder="Foto (URL)" onChange={(event) => {setFoto(event.target.value)}}/>
+              <Input placeholder="Descripción del grupo" onChange={(event) => {setDescripcion(event.target.value)}}/>
+              <Boton1 onClick={agregarContactoGrupo} texto="Agregar contacto" color="wpp" />
+              {
+                masMails ?  
+                <Input placeholder="Mail del contacto" onChange={(event) => {setMail(event.target.value)}} /> 
+                : false
+              }
+              {
+                <Boton1 onClick={crearGrupo} texto="Agregar grupo" color="wpp" />
+              }
             </>
           ) : (
             <>
@@ -124,7 +140,7 @@ export default function InicioPage() {
                 <Input type="checkbox" onChange={handleCheckbox} />
                 Clikee si desea crear un grupo
               </label>
-              <input placeholder="Mail del contacto" id="mailUsuario" />
+              <Input placeholder="Mail del contacto" onChange={(event) => {setMail(event.target.value)}} />
               <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
             </>
           )}
