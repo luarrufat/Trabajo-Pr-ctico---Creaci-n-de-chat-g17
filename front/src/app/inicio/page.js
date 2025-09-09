@@ -107,9 +107,6 @@ export default function InicioPage() {
       <Popup trigger={<BotonRedondo texto="+" />}>
         <div className="posicionPopUp">
           <p>Crear un nuevo chat</p>
-
-
-
           {esGrupo ? (
             <>
               <label>
