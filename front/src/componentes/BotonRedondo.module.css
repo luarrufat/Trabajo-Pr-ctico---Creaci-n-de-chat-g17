@@ -1,0 +1,22 @@
+.botonRedondo {
+  background-color: #6f82ee;
+  color: white;
+  border: none;
+  border-radius: 50%; 
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+
+
+  position: fixed;
+  bottom: 20px;  
+  left: 20px;     
+}
+.botonRedondo:hover {
+  background-color: #5a6fd1;
+}

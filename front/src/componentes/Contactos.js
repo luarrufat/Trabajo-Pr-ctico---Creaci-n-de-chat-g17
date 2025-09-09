@@ -4,16 +4,14 @@ import clsx from "clsx"
 import styles from "@/componentes/Contactos.module.css"
 
 export default function Contacto(props) {
-    return (
-        <div className={
-            clsx(
-            {
-                [styles.contactos]: props.color == "contactos",
-            }
-        )
-        }><h3>{props.texto}</h3>
-        </div>
-        
-    );
+  return (
+    <div
+      onClick={props.onClick}
+      className={clsx({
+        [styles.contactos]: props.color == "contactos",
+      })}
+    >
+      <h3>{props.nombre}</h3>
+    </div>
+  )
 }
-

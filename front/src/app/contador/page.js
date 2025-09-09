@@ -6,7 +6,7 @@ import Boton1 from "@/componentes/Boton1";
 import { use, useEffect, useState } from "react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import styles from "@/componentes/Boton1.module.css"
+import BotonRedondo from "@/componentes/BotonRedondo";
 
 export default function loginPage() {
     const [cuenta, setCuenta] = useState(0);
@@ -58,6 +58,8 @@ export default function loginPage() {
             <Input type={"text"} respuesta={saludo}></Input>
             {nombre != "" && <h2>Soy:{nombre}</h2>}
             {nombre == "mati" ? <h2> Sos pro {nombre}</h2>:<h2>Escribí mati</h2>}
+
+            
         </>
     )
 }

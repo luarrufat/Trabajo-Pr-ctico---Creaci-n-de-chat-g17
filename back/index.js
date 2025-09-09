@@ -83,7 +83,7 @@ app.post('/registro', async function (req, res) {
         } else {
             res.send({ res: "Ya existe ese dato", agregado: false })
         }
-        
+
 
     } catch (e) {
         res.status(500).send({
@@ -93,3 +93,68 @@ app.post('/registro', async function (req, res) {
         });
     }
 })
+
+app.post("/chats", async function (req, res) {
+    try {
+        const resultado = await realizarQuery(`
+            SELECT Chats.ID, Chats.nombre 
+            FROM Chats
+            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
+            WHERE UsuariosPorChat.id_usuario = ${req.body.id_usuario}
+
+        `);
+
+        res.send(resultado);
+    } catch (error) {
+        res.send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
+
+//agregar chats
+
+app.post("/agregarChat", async function (req, res) {
+  try {
+    let chatId;
+
+    if (req.body.es_grupo == 1) {
+      // Insertar grupo
+      const resultado = await realizarQuery(`
+        INSERT INTO Chats (historial, es_grupo, foto, nombre, descripcion_grupo)
+        VALUES ('', 1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
+      `);
+      chatId = resultado.insertId;
+    } else {
+      // Insertar chat individual (campos vacíos salvo es_grupo = 0)
+      const resultado = await realizarQuery(`
+        INSERT INTO Chats (historial, es_grupo, foto, nombre, descripcion_grupo)
+        VALUES ('', 0, NULL, NULL, NULL)
+      `);
+      chatId = resultado.insertId;
+
+      // obtener id del otro usuario por mail
+      const usuarios = await realizarQuery(`
+        SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
+      `);
+      const otroUsuarioId = usuarios[0].ID;
+
+      // vincular usuarios al chat
+      await realizarQuery(`
+        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+        VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
+      `);
+    }
+
+    res.send({ ok: true, id_chat: chatId });
+  } catch (error) {
+    res.status(500).send({
+      ok: false,
+      mensaje: "Error en el servidor",
+      error: error.message,
+    });
+  }
+});
+
