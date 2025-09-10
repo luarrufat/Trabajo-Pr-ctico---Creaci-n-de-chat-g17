@@ -55,7 +55,6 @@ export default function LoginPage() {
       console.log(response);
 
       const result = await response.json();
-      console.log(result);
 
       if (result.ok) {
         localStorage.setItem('ID', result.id);

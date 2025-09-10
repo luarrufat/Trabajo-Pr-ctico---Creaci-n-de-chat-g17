@@ -21,6 +21,27 @@ export default function InicioPage() {
   const [masMails, setMasMails] = useState(false)
 
 
+    useEffect(() => {
+    
+
+    traerChats()
+  }, [])
+
+  async function traerChats() {
+      try {
+        const response = await fetch("http://localhost:4000/chats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({id_usuario: parseInt(localStorage.getItem("ID"))})
+        })
+        const data = await response.json()
+        console.log(data)
+        setContacts(data)  // guardamos los chats en el estado
+      } catch (error) {
+        console.error("Error al traer chats:", error)
+      }
+  }
+
   function handleCheckbox(event) {
     setEsGrupo(event.target.checked);
   }
@@ -31,7 +52,7 @@ export default function InicioPage() {
       nombre: document.getElementById("nombreGrupo").value,
       foto: document.getElementById("fotoGrupo").value,
       descripcion_grupo: document.getElementById("descripcionGrupo").value,
-      id_usuario: localStorage.getItem("idUsuario"), // usuario logueado
+      id_usuario: localStorage.getItem("ID"), // usuario logueado
     };
 
     const response = await fetch("http://localhost:4000/agregarChat", {
@@ -48,7 +69,7 @@ export default function InicioPage() {
     const datos = {
       es_grupo: 0,
       mail: mail,
-      id_usuario: localStorage.getItem("idUsuario"), // usuario logueado
+      id_usuario: localStorage.getItem("ID"), // usuario logueado
     };
 
     const response = await fetch("http://localhost:4000/agregarChat", {
@@ -58,7 +79,9 @@ export default function InicioPage() {
     });
 
     const result = await response.json();
-    console.log(result);
+    if (result.ok == true) {
+      traerChats()
+    }
   }
 
   async function obtenerDatos() {
