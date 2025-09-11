@@ -18,28 +18,26 @@ export default function InicioPage() {
   const [esGrupo, setEsGrupo] = useState(false);
   const [idUsuario, setIdUsuario] = useState(1)
   const [mail, setMail] = useState("")
-  const [masMails, setMasMails] = useState(false)
+  const [mails, setMails] = useState(["", ""])
 
 
-    useEffect(() => {
-    
-
+  useEffect(() => {
     traerChats()
   }, [])
 
   async function traerChats() {
-      try {
-        const response = await fetch("http://localhost:4000/chats", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({id_usuario: parseInt(localStorage.getItem("ID"))})
-        })
-        const data = await response.json()
-        console.log(data)
-        setContacts(data)  // guardamos los chats en el estado
-      } catch (error) {
-        console.error("Error al traer chats:", error)
-      }
+    try {
+      const response = await fetch("http://localhost:4000/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
+      })
+      const data = await response.json()
+      console.log(data)
+      setContacts(data)  // guardamos los chats en el estado
+    } catch (error) {
+      console.error("Error al traer chats:", error)
+    }
   }
 
   function handleCheckbox(event) {
@@ -93,7 +91,7 @@ export default function InicioPage() {
     }
     agregarChat(datos)
   }
-  
+
   async function agregarChat(datos) {
     console.log("Click en botón")
     try {
@@ -118,9 +116,47 @@ export default function InicioPage() {
   }
 
 
-  function agregarContactoGrupo() {
-    setMasMails(true)
+  function agregarInput() {
+    setMails([...mails, ""]); 
   }
+
+  function actualizarMail(index, value) {
+    const copia = [...mails];
+    copia[index] = value;
+    setMails(copia);
+  }
+
+  async function crearGrupo() {
+  // limpiar mails con un for
+  let mailsLimpios = [];
+  for (let i = 0; i < mails.length; i++) {
+    if (mails[i].trim() !== "") {
+      mailsLimpios.push(mails[i]); // agrego solo los que no están vacíos
+    }
+  }
+
+  const datos = {
+    es_grupo: 1,
+    nombre,
+    foto,
+    descripcion_grupo: descripcion,
+    id_usuario: localStorage.getItem("ID"),
+    mails: mailsLimpios, 
+  };
+
+  try {
+    const response = await fetch("http://localhost:4000/agregarChat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+
+    const result = await response.json();
+    console.log(result);
+  } catch (error) {
+    console.error("Error al crear grupo:", error);
+  }
+}
 
   return (
     <>
@@ -144,18 +180,16 @@ export default function InicioPage() {
                 Clikee si desea crear un chat individual
               </label>
 
-              <Input placeholder="Nombre del grupo" onChange={(event) => {setNombre(event.target.value)}}/>
-              <Input placeholder="Foto (URL)" onChange={(event) => {setFoto(event.target.value)}}/>
-              <Input placeholder="Descripción del grupo" onChange={(event) => {setDescripcion(event.target.value)}}/>
-              <Boton1 onClick={agregarContactoGrupo} texto="Agregar contacto" color="wpp" />
-              {
-                masMails ?  
-                <Input placeholder="Mail del contacto" onChange={(event) => {setMail(event.target.value)}} /> 
-                : false
-              }
-              {
-                <Boton1 onClick={crearGrupo} texto="Agregar grupo" color="wpp" />
-              }
+              <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} />
+              <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} />
+              <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} />
+              <h4>Usuarios del grupo</h4>
+              {mails.map((mail, i) => (
+                <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(index, e.target.value)} color="registro" />
+              ))}
+              <button onClick={agregarInput}>Añadir otro usuario</button>
+              <button onClick={crearGrupo}>Crear grupo</button>
+
             </>
           ) : (
             <>
@@ -163,7 +197,7 @@ export default function InicioPage() {
                 <Input type="checkbox" onChange={handleCheckbox} />
                 Clikee si desea crear un grupo
               </label>
-              <Input placeholder="Mail del contacto" onChange={(event) => {setMail(event.target.value)}} />
+              <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} />
               <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
             </>
           )}
