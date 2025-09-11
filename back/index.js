@@ -121,7 +121,7 @@ app.post('/registro', async function (req, res) {
 
 app.get('/contacto', async (req, res) => {
     try {
-        const contactos = await realizarQuery("SELECT nombre FROM Chats ORDER BY RAND() LIMIT 1;");
+        const contactos = await realizarQuery("SELECT nombre FROM Chats WHERE id = 2 LIMIT 1;"); // aca hay q hacer q where id tome el id del usuario logueado, pero antes necesito algo que conecte usuarios con chats 
         if (contactos.length === 0) {
             return res.send({ ok: false, mensaje: "No hay contacto" });
         }

@@ -9,6 +9,7 @@ export default function Mensajes(props) {
             clsx(
             {
                 [styles.mensajes]: props.color == "mensajes",
+                [styles.mensajeyo]: props.lado == "mensajeyo",
             }
         )
         }><h2>{props.texto}</h2>

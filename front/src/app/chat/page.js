@@ -44,6 +44,7 @@ export default function ChatPage() {
         }
         setNuevoMensaje("");
     }
+
     async function obtenerNombre() {
         try {
             const response = await fetch("http://localhost:4000/contacto", {
@@ -63,6 +64,7 @@ export default function ChatPage() {
             const datos = await obtenerNombre();
             if (datos.ok && datos.contacto) {
                 setNombre(datos.contacto.nombre);
+                console.log(datos)
             } else {
                 console.log("No se pudo obtener el nombre");
             }
@@ -91,7 +93,7 @@ export default function ChatPage() {
         </header>
 
         {/* Mostrar el último mensaje enviado */}
-        {ultimoMensaje && <Mensajes texto={ultimoMensaje} />}
+        {ultimoMensaje && <Mensajes color="mensajes" lado= "mensajeyo" texto={ultimoMensaje} />}
 
         <footer className={styles.chatInput}>
           <input
