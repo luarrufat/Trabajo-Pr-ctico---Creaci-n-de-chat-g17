@@ -72,10 +72,11 @@ app.post('/login', async function (req, res) {
 
         if (resultado.length > 0) {
             const usuario = resultado[0];
+            req.session.userId = usuario.ID;
             res.send({
                 ok: true,
                 mensaje: "Login correcto",
-                id: usuario.id,
+                id: usuario.ID,
             });
         } else {
             res.send({
@@ -121,7 +122,7 @@ app.post('/registro', async function (req, res) {
 
 app.get('/contacto', async (req, res) => {
     try {
-        const contactos = await realizarQuery("SELECT nombre FROM Chats WHERE id = 2 LIMIT 1;"); // aca hay q hacer q where id tome el id del usuario logueado, pero antes necesito algo que conecte usuarios con chats 
+        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = 2 LIMIT 1;"); // aca hay q hacer q where id tome el id del usuario logueado, pero antes necesito algo que conecte usuarios con chats 
         if (contactos.length === 0) {
             return res.send({ ok: false, mensaje: "No hay contacto" });
         }
@@ -130,7 +131,7 @@ app.get('/contacto', async (req, res) => {
         res.send({
             ok: true,
             contacto: {
-                id: contacto.ID,
+                ID: contacto.ID,
                 nombre: contacto.nombre,
             }
         });
@@ -170,4 +171,50 @@ io.on("connection", (socket) => {
 	socket.on('disconnect', () => {
 		console.log("Disconnect");
 	})
+});
+
+//subir mensajes a bbdd
+app.post('/mensajes', async (req, res) => {
+    try {
+        console.log("Datos recibidos:", req.body);
+        await realizarQuery(`
+            INSERT INTO Mensajes (contenido, fecha_hora, id_usuario, id_chat) 
+            VALUES (?, ?, ?, ?)`, 
+            [req.body.contenido, req.body.fecha_hora, req.body.id_usuario, req.body.id_chat]
+        );
+
+        res.send({ res: "ok", agregado: true });
+    } catch (e) {
+        res.status(500).send({
+            agregado: false,
+            mensaje: "Error en el servidor",
+            error: e.message
+        });
+    }
+});
+
+
+app.get('/infoUsuario', async (req, res) => {
+    try {
+        const userId = req.session.userId; // segun chat gpt esto toma el id del usuario q inicio sesion
+        if (!userId) {
+            return res.status(401).send({ ok: false, mensaje: "Usuario no logueado" });
+        }
+
+        const usuario = await realizarQuery(
+            "SELECT ID, nombre FROM Usuarios WHERE ID = ? LIMIT 1",
+            [userId]
+        );
+
+        if (usuario.length === 0) {
+            return res.send({ ok: false, mensaje: "Usuario no encontrado" });
+        }
+
+        res.send({
+            ok: true,
+            usuario: usuario[0],
+        });
+    } catch (error) {
+        res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
 });

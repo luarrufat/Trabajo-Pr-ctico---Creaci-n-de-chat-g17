@@ -13,6 +13,7 @@ export default function ChatPage() {
     const { socket, isConnected } = useSocket();
     const [nuevoMensaje, setNuevoMensaje] = useState("");
     const [ultimoMensaje, setUltimoMensaje] = useState("");
+    const [mensajeSubir, setmensajeSubir] = useState("");
     useEffect(() => {
         if (!socket) return;
 
@@ -41,6 +42,7 @@ export default function ChatPage() {
         setUltimoMensaje(nuevoMensaje);
         if (socket) {
             socket.emit("pingAll", { mensaje: nuevoMensaje });
+            guardarMensajes()
         }
         setNuevoMensaje("");
     }
@@ -72,39 +74,114 @@ export default function ChatPage() {
         contacto();
     }, []);
 
+    {/*SUBIR MENSAJES A BBDD*/ }
+
+    async function obtenerIdUsuario() {
+        try {
+            const response = await fetch("http://localhost:4000/infoUsuario", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+            return await response.json();
+        } catch (err) {
+            console.error("Error al obtener id:", err);
+            return { ok: false };
+        }
+    }
+
+    async function agregarMensajes(datos) {
+        try {
+            const response = await fetch("http://localhost:4000/mensajes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos),
+            })
+            const result = await response.json()
+            console.log(result)
+
+            if (result.res === "ok") {
+
+            }
+        } catch (error) {
+            console.log("Error", error)
+        }
+    }
+    {/*
+    async function guardarMensajes() {
+        const usuario = await obtenerIdUsuario();
+        const chat = await obtenerNombre();
+
+        const datos = {
+            contenido: nuevoMensaje,
+            fecha_hora: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            id_usuario: usuario.idUsuario,
+            id_chat: chat.contacto.ID
+        };
+        console.log("Datos a guardar:", datos);
+        agregarMensajes(datos);
+    }
+    */}
+    async function guardarMensajes() {
+        try {
+            const usuarioResp = await obtenerIdUsuario();
+            const chatResp = await obtenerNombre();
+            console.log("EL ID USUARIO ES: ", usuarioResp)
+            if (!usuarioResp.ok || !chatResp.ok) {
+                console.error("Error: no se pudo obtener usuario o chat");
+                return;
+            }
+    
+            const id = usuarioResp.usuario.ID;
+            const idChat = chatResp.contacto.ID;
+    
+            const datos = {
+                contenido: nuevoMensaje,
+                fecha_hora: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                id_usuario: id,
+                id_chat: idChat,
+            };
+    
+            console.log("Datos a enviar:", datos);
+            await agregarMensajes(datos);
+        } catch (error) {
+            console.error("Error al guardar mensaje:", error);
+        }
+    }
+    
     return (
-    <div className={styles.chatContainer}>
-      {/* Panel de contactos */}
-      <div className={styles.contactos}>
-        <input
-          type="text"
-          placeholder="Buscar contacto"
-          className={styles.buscador}
-        />
-        <Contacto color="contactos" texto="Usuario 1" />
-        <Contacto color="contactos" texto="Usuario 2" />
-        <Contacto color="contactos" texto="Usuario 3" />
-      </div>
+        <div className={styles.chatContainer}>
+            {/* Panel de contactos */}
+            <div className={styles.contactos}>
+                <input
+                    type="text"
+                    placeholder="Buscar contacto"
+                    className={styles.buscador}
+                />
+                <Contacto color="contactos" texto="Usuario 1" />
+                <Contacto color="contactos" texto="Usuario 2" />
+                <Contacto color="contactos" texto="Usuario 3" />
+            </div>
 
-      {/* Chat principal */}
-      <section className={styles.chat}>
-        <header className={styles.chatHeader}>
-          <h2>⚪ {nombre}</h2>
-        </header>
+            {/* Chat principal */}
+            <section className={styles.chat}>
+                <header className={styles.chatHeader}>
+                    <h2>⚪ {nombre}</h2>
+                </header>
 
-        {/* Mostrar el último mensaje enviado */}
-        {ultimoMensaje && <Mensajes color="mensajes" lado= "mensajeyo" texto={ultimoMensaje} />}
+                {/* Mostrar el último mensaje enviado */}
+                {ultimoMensaje && <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />}
 
-        <footer className={styles.chatInput}>
-          <input
-            type="text"
-            placeholder="Escribe tu mensaje..."
-            value={nuevoMensaje}
-            onChange={(e) => setNuevoMensaje(e.target.value)}
-          />
-          <Boton1 texto="Enviar" color="wpp" onClick={enviarMensaje} />
-        </footer>
-      </section>
-    </div>
-  );
+                <footer className={styles.chatInput}>
+                    <input
+                        type="text"
+                        placeholder="Escribe tu mensaje..."
+                        value={nuevoMensaje}
+                        onChange={(e) => setNuevoMensaje(e.target.value)}
+
+                    />
+                    <Boton1 texto="Enviar" color="wpp" onClick={enviarMensaje} />
+                </footer>
+            </section>
+        </div>
+    );
 }

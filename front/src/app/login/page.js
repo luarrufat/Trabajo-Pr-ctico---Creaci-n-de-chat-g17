@@ -24,7 +24,7 @@ export default function LoginPage() {
       console.log(result)
 
       if (result.res === "ok") {
-        router.push("/contador")
+        router.push("/chat")
       }
     } catch (error) {
       console.log("Error", error)
@@ -60,7 +60,7 @@ export default function LoginPage() {
       if (result.ok) {
         localStorage.setItem('ID', result.id);
         if (result.ok === true) {
-          router.push("/contador")
+          router.push("/chat")
         }
 
       } else {
