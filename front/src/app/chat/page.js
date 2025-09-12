@@ -123,15 +123,15 @@ export default function ChatPage() {
     */}
     async function guardarMensajes() {
         try {
-            const usuarioResp = await obtenerIdUsuario();
+            const usuarioResp = localStorage.getItem('ID');
             const chatResp = await obtenerNombre();
             console.log("EL ID USUARIO ES: ", usuarioResp)
-            if (!usuarioResp.ok || !chatResp.ok) {
+            if (!usuarioResp) {
                 console.error("Error: no se pudo obtener usuario o chat");
                 return;
             }
     
-            const id = usuarioResp.usuario.ID;
+            const id = usuarioResp;
             const idChat = chatResp.contacto.ID;
     
             const datos = {

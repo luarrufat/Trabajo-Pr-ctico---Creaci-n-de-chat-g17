@@ -62,7 +62,7 @@ app.get('/', function (req, res) {
 
 
 //login
-app.post('/login', async function (req, res) {
+/*app.post('/login', async function (req, res) {
     console.log(req.body);
     try {
         const resultado = await realizarQuery(`
@@ -93,6 +93,38 @@ app.post('/login', async function (req, res) {
         });
     }
 });
+*/
+app.post('/login', async function (req, res) {
+    console.log(req.body);
+    try {
+        const resultado = await realizarQuery(`
+            SELECT * FROM Usuarios 
+            WHERE usuario_mail = '${req.body.usuario_mail}' AND password = '${req.body.contraseña}'
+        `);
+
+        if (resultado.length > 0) {
+            const usuario = resultado[0];
+            res.send({
+                ok: true,
+                mensaje: "Login correcto",
+                id: usuario.ID,
+            });
+        } else {
+            res.send({
+                ok: false,
+                mensaje: "Credenciales incorrectas"
+            });
+        }
+
+    } catch (error) {
+        res.send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
+
 
 //registro
 app.post('/registro', async function (req, res) {
@@ -178,9 +210,8 @@ app.post('/mensajes', async (req, res) => {
     try {
         console.log("Datos recibidos:", req.body);
         await realizarQuery(`
-            INSERT INTO Mensajes (contenido, fecha_hora, id_usuario, id_chat) 
-            VALUES (?, ?, ?, ?)`, 
-            [req.body.contenido, req.body.fecha_hora, req.body.id_usuario, req.body.id_chat]
+                INSERT INTO Mensajes (contenido, fecha_hora, id_usuario, id_chat) VALUES
+            ("${req.body.contenido}","${req.body.fecha_hora}",${req.body.id_usuario},${req.body.id_chat});`
         );
 
         res.send({ res: "ok", agregado: true });
