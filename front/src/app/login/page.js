@@ -55,12 +55,11 @@ export default function LoginPage() {
       console.log(response);
 
       const result = await response.json();
-      console.log(result);
 
       if (result.ok) {
         localStorage.setItem('ID', result.id);
         if (result.ok === true) {
-          router.push("/contador")
+          router.replace("/inicio")
         }
 
       } else {
