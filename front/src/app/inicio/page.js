@@ -144,7 +144,7 @@ export default function InicioPage() {
     mails: mailsLimpios, 
   };
 
-  try {
+  try { 
     const response = await fetch("http://localhost:4000/agregarChat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -185,7 +185,7 @@ export default function InicioPage() {
               <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} />
               <h4>Usuarios del grupo</h4>
               {mails.map((mail, i) => (
-                <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(index, e.target.value)} color="registro" />
+                <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />
               ))}
               <button onClick={agregarInput}>Añadir otro usuario</button>
               <button onClick={crearGrupo}>Crear grupo</button>
@@ -203,8 +203,6 @@ export default function InicioPage() {
           )}
         </div>
       </Popup>
-
-
 
     </>
   )

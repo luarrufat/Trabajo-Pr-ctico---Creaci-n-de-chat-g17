@@ -175,8 +175,8 @@ app.post("/agregarChat", async function (req, res) {
     if (req.body.es_grupo == 1) {
       // Insertar el grupo
       const resultado = await realizarQuery(`
-        INSERT INTO Chats (historial, es_grupo, foto, nombre, descripcion_grupo)
-        VALUES ('', 1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
+        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
+        VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
       `);
       
       chatId = resultado.insertId;
