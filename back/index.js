@@ -61,39 +61,10 @@ app.get('/', function (req, res) {
 
 
 
+
 //login
-/*app.post('/login', async function (req, res) {
-    console.log(req.body);
-    try {
-        const resultado = await realizarQuery(`
-            SELECT * FROM Usuarios 
-            WHERE usuario_mail = '${req.body.usuario_mail}' AND password = '${req.body.contraseña}'
-        `);
 
-        if (resultado.length > 0) {
-            const usuario = resultado[0];
-            req.session.userId = usuario.ID;
-            res.send({
-                ok: true,
-                mensaje: "Login correcto",
-                id: usuario.ID,
-            });
-        } else {
-            res.send({
-                ok: false,
-                mensaje: "Credenciales incorrectas"
-            });
-        }
-
-    } catch (error) {
-        res.send({
-            ok: false,
-            mensaje: "Error en el servidor",
-            error: error.message
-        });
-    }
-});
-*/
+let idUsuario = localStorage.getItem('ID');
 app.post('/login', async function (req, res) {
     console.log(req.body);
     try {
@@ -125,7 +96,6 @@ app.post('/login', async function (req, res) {
     }
 });
 
-
 //registro
 app.post('/registro', async function (req, res) {
     try {
@@ -152,9 +122,34 @@ app.post('/registro', async function (req, res) {
     }
 })
 
+app.get('/chats', async (req, res) => {
+    try {
+        const contactos = await realizarQuery("SELECT id_chat FROM UsuariosPorChat WHERE id_usuario =  idUsuario LIMIT 1;");
+        if (contactos.length === 0) {
+            return res.send({ ok: false, mensaje: "No hay contacto" });
+        }
+        const contacto = contactos[0];
+
+        res.send({
+            ok: true,
+            contacto: {
+                ID: contacto.ID,
+                nombre: contacto.nombre,
+            }
+        });
+
+    } catch (error) {
+        res.status(500).send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
+
 app.get('/contacto', async (req, res) => {
     try {
-        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = 2 LIMIT 1;"); // aca hay q hacer q where id tome el id del usuario logueado, pero antes necesito algo que conecte usuarios con chats 
+        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = idChat LIMIT 1;");
         if (contactos.length === 0) {
             return res.send({ ok: false, mensaje: "No hay contacto" });
         }

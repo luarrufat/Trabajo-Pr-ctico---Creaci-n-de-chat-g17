@@ -13,29 +13,21 @@ export default function ChatPage() {
     const { socket, isConnected } = useSocket();
     const [nuevoMensaje, setNuevoMensaje] = useState("");
     const [ultimoMensaje, setUltimoMensaje] = useState("");
-    const [mensajeSubir, setmensajeSubir] = useState("");
+    const [idChatU, setIdChatU] = useState("");
+
     useEffect(() => {
         if (!socket) return;
 
         socket.on("pingAll", (data) => {
             console.log("PING ALL DEL FRONT: ", data);
         });
-
-        return () => {
-            socket.off("pingAll");
-        };
     }, [socket]);
 
-    {/*
-    function enviarMensaje() {
-        if (!nuevoMensaje.trim()) return;
-        setHistorial(historial + "\n" + nuevoMensaje);
-        if (socket) {
-            socket.emit("pingAll", { mensaje: nuevoMensaje });
+    useEffect(() => {
+        if(socket) {
+            socket.emit("joinRoom", {room: idChatU})
         }
-        setNuevoMensaje("");
-    }
-       */}
+    }, [socket])
 
     function enviarMensaje() {
         if (!nuevoMensaje.trim()) return;
@@ -106,25 +98,12 @@ export default function ChatPage() {
             console.log("Error", error)
         }
     }
-    {/*
-    async function guardarMensajes() {
-        const usuario = await obtenerIdUsuario();
-        const chat = await obtenerNombre();
 
-        const datos = {
-            contenido: nuevoMensaje,
-            fecha_hora: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            id_usuario: usuario.idUsuario,
-            id_chat: chat.contacto.ID
-        };
-        console.log("Datos a guardar:", datos);
-        agregarMensajes(datos);
-    }
-    */}
     async function guardarMensajes() {
         try {
             const usuarioResp = localStorage.getItem('ID');
             const chatResp = await obtenerNombre();
+            setIdChatU(chatResp);
             console.log("EL ID USUARIO ES: ", usuarioResp)
             if (!usuarioResp) {
                 console.error("Error: no se pudo obtener usuario o chat");
