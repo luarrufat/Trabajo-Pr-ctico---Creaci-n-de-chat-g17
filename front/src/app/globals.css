@@ -41,8 +41,46 @@ a {
   }
 }
 
-.posicionPopUp{
-  position: fixed;
-  bottom: 20px;  
-  left: 20px;     
+
+.popupContainer {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #f4f4f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #e6e8f8;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popupContainer p {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.popupContainer label {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.popupContainer h4 {
+  font-size: 1rem;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.popupButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
 }
