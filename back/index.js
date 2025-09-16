@@ -4,7 +4,7 @@ var cors = require('cors');
 const session = require('express-session');				// Para el manejo de las variables de sesión
 const path = require('path');
 const { realizarQuery } = require('./modulos/mysql');
-
+			
 var app = express(); //Inicializo express
 const port = process.env.PORT || 4000;								// Puerto por el que estoy ejecutando la página Web
 
@@ -153,7 +153,7 @@ app.post("/chats", async function (req, res) {
     try {
         console.log(req.body)
         const resultado = await realizarQuery(`
-            SELECT Chats.ID , Chats.nombre 
+            SELECT Chats.ID , Chats.nombre, Chats.foto
             FROM Chats
             INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
             WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
