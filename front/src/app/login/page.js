@@ -24,7 +24,7 @@ export default function LoginPage() {
       console.log(result)
 
       if (result.res === "ok") {
-        router.push("/contador")
+        router.replace("/inicio")
       }
     } catch (error) {
       console.log("Error", error)
