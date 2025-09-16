@@ -4,6 +4,7 @@ var cors = require('cors');
 const session = require('express-session');				// Para el manejo de las variables de sesión
 const path = require('path');
 const { realizarQuery } = require('./modulos/mysql');
+const session = require('express-session');				// Para el manejo de las variables de sesión
 
 var app = express(); //Inicializo express
 const port = process.env.PORT || 4000;								// Puerto por el que estoy ejecutando la página Web
@@ -17,9 +18,11 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
-const server = app.listen(port, () => {
-	console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
-});;
+//Pongo el servidor a escuchar
+const server = app.listen(port, function () {
+    console.log(`Server running in http://localhost:${port}
+        `);
+});
 
 const io = require('socket.io')(server, {
 	cors: {
@@ -89,6 +92,8 @@ app.get('/', function (req, res) {
 
 
 //login
+
+let idUsuario = localStorage.getItem('ID');
 app.post('/login', async function (req, res) {
     console.log(req.body);
     try {
@@ -102,7 +107,7 @@ app.post('/login', async function (req, res) {
             res.send({
                 ok: true,
                 mensaje: "Login correcto",
-                id: usuario.ID
+                id: usuario.ID,
             });
         } else {
             res.send({
@@ -232,3 +237,100 @@ app.post("/agregarChat", async function (req, res) {
   }
 });
 
+app.get('/contacto', async (req, res) => {
+    try {
+        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = idChat LIMIT 1;");
+        if (contactos.length === 0) {
+            return res.send({ ok: false, mensaje: "No hay contacto" });
+        }
+        const contacto = contactos[0];
+
+        res.send({
+            ok: true,
+            contacto: {
+                ID: contacto.ID,
+                nombre: contacto.nombre,
+            }
+        });
+
+    } catch (error) {
+        res.status(500).send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
+
+/* ACA ARRANCA LO DEL SOCKET */
+io.on("connection", (socket) => {
+	const req = socket.request;
+
+	socket.on('joinRoom', data => {
+		console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
+		if (req.session.room != undefined && req.session.room.length > 0)
+			socket.leave(req.session.room);
+		req.session.room = data.room;
+		socket.join(req.session.room);
+
+		io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
+	});
+
+	socket.on('pingAll', data => {
+		console.log("PING ALL: ", data);
+		io.emit('pingAll', { event: "Ping to all", message: data });
+	});
+
+	socket.on('sendMessage', data => {
+		io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+	});
+
+	socket.on('disconnect', () => {
+		console.log("Disconnect");
+	})
+});
+
+//subir mensajes a bbdd
+app.post('/mensajes', async (req, res) => {
+    try {
+        console.log("Datos recibidos:", req.body);
+        await realizarQuery(`
+                INSERT INTO Mensajes (contenido, fecha_hora, id_usuario, id_chat) VALUES
+            ("${req.body.contenido}","${req.body.fecha_hora}",${req.body.id_usuario},${req.body.id_chat});`
+        );
+
+        res.send({ res: "ok", agregado: true });
+    } catch (e) {
+        res.status(500).send({
+            agregado: false,
+            mensaje: "Error en el servidor",
+            error: e.message
+        });
+    }
+});
+
+
+app.get('/infoUsuario', async (req, res) => {
+    try {
+        const userId = req.session.userId; // segun chat gpt esto toma el id del usuario q inicio sesion
+        if (!userId) {
+            return res.status(401).send({ ok: false, mensaje: "Usuario no logueado" });
+        }
+
+        const usuario = await realizarQuery(
+            "SELECT ID, nombre FROM Usuarios WHERE ID = ? LIMIT 1",
+            [userId]
+        );
+
+        if (usuario.length === 0) {
+            return res.send({ ok: false, mensaje: "Usuario no encontrado" });
+        }
+
+        res.send({
+            ok: true,
+            usuario: usuario[0],
+        });
+    } catch (error) {
+        res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
+});
