@@ -59,7 +59,7 @@ export default function LoginPage() {
       if (result.ok) {
         localStorage.setItem('ID', result.id);
         if (result.ok === true) {
-          router.replace("/inicio")
+          router.replace("/iniciochat")
         }
 
       } else {

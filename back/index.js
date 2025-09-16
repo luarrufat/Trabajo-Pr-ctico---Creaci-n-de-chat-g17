@@ -4,7 +4,6 @@ var cors = require('cors');
 const session = require('express-session');				// Para el manejo de las variables de sesión
 const path = require('path');
 const { realizarQuery } = require('./modulos/mysql');
-const session = require('express-session');				// Para el manejo de las variables de sesión
 
 var app = express(); //Inicializo express
 const port = process.env.PORT || 4000;								// Puerto por el que estoy ejecutando la página Web
@@ -93,7 +92,6 @@ app.get('/', function (req, res) {
 
 //login
 
-let idUsuario = localStorage.getItem('ID');
 app.post('/login', async function (req, res) {
     console.log(req.body);
     try {
@@ -237,9 +235,10 @@ app.post("/agregarChat", async function (req, res) {
   }
 });
 
+//CORREGIR
 app.get('/contacto', async (req, res) => {
     try {
-        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = idChat LIMIT 1;");
+        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = 2 LIMIT 1;");
         if (contactos.length === 0) {
             return res.send({ ok: false, mensaje: "No hay contacto" });
         }
@@ -256,7 +255,7 @@ app.get('/contacto', async (req, res) => {
     } catch (error) {
         res.status(500).send({
             ok: false,
-            mensaje: "Error en el servidor",
+            mensaje: "Error en el servido ASDRAAAAAAA",
             error: error.message
         });
     }
