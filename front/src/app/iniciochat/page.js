@@ -15,6 +15,7 @@ import 'reactjs-popup/dist/index.css';
 
 export default function ChatPage() {
     const [nombre, setNombre] = useState("");
+    const [nombreL, setNombreL] = useState("");
     const { socket, isConnected } = useSocket();
     const [nuevoMensaje, setNuevoMensaje] = useState("");
     const [ultimoMensaje, setUltimoMensaje] = useState("");
@@ -27,6 +28,8 @@ export default function ChatPage() {
     const [idUsuario, setIdUsuario] = useState(1)
     const [mail, setMail] = useState("")
     const [mails, setMails] = useState(["", ""])
+    const [chatActivo, setChatActivo] = useState(null);
+
 
     useEffect(() => {
         if (!socket) return;
@@ -49,11 +52,11 @@ export default function ChatPage() {
     function enviarMensaje() {
         if (!nuevoMensaje.trim()) return;
         setUltimoMensaje(nuevoMensaje);
- 
+
         if (socket) {
             socket.emit("pingAll", { mensaje: nuevoMensaje });
             guardarMensajes()
-    
+
         }
         setNuevoMensaje("");
     }
@@ -61,8 +64,9 @@ export default function ChatPage() {
     async function obtenerNombre() {
         try {
             const response = await fetch("http://localhost:4000/contacto", {
-                method: "GET",
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
             });
             return await response.json();
         } catch (err) {
@@ -72,12 +76,12 @@ export default function ChatPage() {
 
     }
 
-
+    //LUCIA CHAT
     useEffect(() => {
         async function contacto() {
             const datos = await obtenerNombre();
             if (datos.ok && datos.contacto) {
-                setNombre(datos.contacto.nombre);
+                setNombreL(datos.contacto.nombre);
                 console.log(datos)
             } else {
                 console.log("No se pudo obtener el nombre");
@@ -264,8 +268,8 @@ export default function ChatPage() {
                 return;
             }
             const idChat = chatResp.contacto.ID;
-            console.log("id del usuario: " ,id)
-            console.log("id del chat: " ,idChat)
+            console.log("id del usuario: ", usuarioResp)
+            console.log("id del chat: ", idChat)
             const datos = {
                 contenido: nuevoMensaje,
                 fecha_hora: new Date().toISOString().slice(0, 19).replace('T', ' '),
@@ -292,11 +296,16 @@ export default function ChatPage() {
                 />*/}
 
                 <Input type="text" placeholder="Buscar" id="buscar" color="registro" />
-                {contacts.length != 0 && contacts.map((chat) => (
+                {contacts.length !== 0 && contacts.map((chat) => (
                     <li key={chat.ID}>
-                        <Contacto nombre={chat.nombre} color="contactos" />
+                        <Contacto
+                            nombre={chat.nombre}
+                            color="contactos"
+                            onClick={() => setChatActivo(chat)}
+                        />
                     </li>
                 ))}
+
             </div>
             <Popup trigger={<BotonRedondo texto="+" />}>
                 <div className="posicionPopUp">
@@ -334,22 +343,29 @@ export default function ChatPage() {
             {/* Chat principal */}
             <section className={styles.chat}>
                 <header className={styles.chatHeader}>
-                    <h2>⚪ {nombre}</h2>
+                    {chatActivo ? (
+                        <h2>⚪ {chatActivo.nombre}</h2>
+                    ) : (
+                        <h2>Selecciona un chat</h2>
+                    )}
                 </header>
 
                 {/* Mostrar el último mensaje enviado */}
-                {ultimoMensaje && <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />}
+                {chatActivo && ultimoMensaje && (
+                    <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />
+                )}
 
-                <footer className={styles.chatInput}>
-                    <input
-                        type="text"
-                        placeholder="Escribe tu mensaje..."
-                        value={nuevoMensaje}
-                        onChange={(e) => setNuevoMensaje(e.target.value)}
-
-                    />
-                    <Boton1 texto="Enviar" color="wpp" onClick={enviarMensaje} />
-                </footer>
+                {chatActivo && (
+                    <footer className={styles.chatInput}>
+                        <input
+                            type="text"
+                            placeholder="Escribe tu mensaje..."
+                            value={nuevoMensaje}
+                            onChange={(e) => setNuevoMensaje(e.target.value)}
+                        />
+                        <Boton1 texto="Enviar" color="wpp" onClick={enviarMensaje} />
+                    </footer>
+                )}
             </section>
         </div>
     );

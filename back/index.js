@@ -236,11 +236,17 @@ app.post("/agregarChat", async function (req, res) {
 });
 
 //CORREGIR
-app.get('/contacto', async (req, res) => {
+app.post('/contacto', async (req, res) => {
     try {
-        const contactos = await realizarQuery("SELECT ID, nombre FROM Chats WHERE id = 2 LIMIT 1;");
+        const contactos = await realizarQuery(`
+            SELECT Chats.ID , Chats.nombre,
+            FROM Chats
+            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
+            WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
+
+        `);
         if (contactos.length === 0) {
-            return res.send({ ok: false, mensaje: "No hay contacto" });
+            return res.send({ ok: false, mensaje: "No se encontró el contacto" });
         }
         const contacto = contactos[0];
 
@@ -255,11 +261,12 @@ app.get('/contacto', async (req, res) => {
     } catch (error) {
         res.status(500).send({
             ok: false,
-            mensaje: "Error en el servido ASDRAAAAAAA",
-            error: error.message
+            mensaje: "Error en el servido ASDRAAAAAAA", 
+            error: error.message,
         });
     }
 });
+
 
 /* ACA ARRANCA LO DEL SOCKET */
 io.on("connection", (socket) => {
