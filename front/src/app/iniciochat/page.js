@@ -25,7 +25,6 @@ export default function ChatPage() {
     const [descripcion, setDescripcion] = useState("");
     const [contacts, setContacts] = useState([])
     const [esGrupo, setEsGrupo] = useState(false);
-    const [idUsuario, setIdUsuario] = useState(1)
     const [mail, setMail] = useState("")
     const [mails, setMails] = useState(["", ""])
     const [chatActivo, setChatActivo] = useState(null);
@@ -66,7 +65,7 @@ export default function ChatPage() {
             const response = await fetch("http://localhost:4000/contacto", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
+                body: JSON.stringify({ id_usuario: localStorage.getItem("ID") })
             });
             return await response.json();
         } catch (err) {
@@ -259,15 +258,13 @@ export default function ChatPage() {
     async function guardarMensajes() {
         try {
             const usuarioResp = localStorage.getItem('ID');
-            const chatResp = await obtenerNombre();
-            console.log("CHATRESPT ES: ", chatResp)
-            setIdChatU(chatResp);
+            setIdChatU(chatActivo.ID);
             console.log("EL ID USUARIO ES: ", usuarioResp)
             if (!usuarioResp) {
                 console.error("Error: no se pudo obtener usuario o chat");
                 return;
             }
-            const idChat = chatResp.contacto.ID;
+            const idChat = chatActivo.ID;
             console.log("id del usuario: ", usuarioResp)
             console.log("id del chat: ", idChat)
             const datos = {

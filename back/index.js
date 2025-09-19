@@ -4,7 +4,8 @@ var cors = require('cors');
 const session = require('express-session');				// Para el manejo de las variables de sesión
 const path = require('path');
 const { realizarQuery } = require('./modulos/mysql');
-			
+const { Console } = require('console');
+
 var app = express(); //Inicializo express
 const port = process.env.PORT || 4000;								// Puerto por el que estoy ejecutando la página Web
 
@@ -24,58 +25,58 @@ const server = app.listen(port, function () {
 });
 
 const io = require('socket.io')(server, {
-	cors: {
-		// IMPORTANTE: REVISAR PUERTO DEL FRONTEND
-		origin: ["http://localhost:3000", "http://localhost:3001"], // Permitir el origen localhost:3000
-		methods: ["GET", "POST", "PUT", "DELETE"],  	// Métodos permitidos
-		credentials: true                           	// Habilitar el envío de cookies
-	}
+    cors: {
+        // IMPORTANTE: REVISAR PUERTO DEL FRONTEND
+        origin: ["http://localhost:3000", "http://localhost:3001"], // Permitir el origen localhost:3000
+        methods: ["GET", "POST", "PUT", "DELETE"],  	// Métodos permitidos
+        credentials: true                           	// Habilitar el envío de cookies
+    }
 });
 
 const sessionMiddleware = session({
-	//Elegir tu propia key secreta
-	secret: "supersarasa",
-	resave: false,
-	saveUninitialized: false
+    //Elegir tu propia key secreta
+    secret: "supersarasa",
+    resave: false,
+    saveUninitialized: false
 });
 
 app.use(sessionMiddleware);
 
 io.use((socket, next) => {
-	sessionMiddleware(socket.request, {}, next);
+    sessionMiddleware(socket.request, {}, next);
 });
 
 /*
-	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
-	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
-	A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+    A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+    A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
+    A PARTIR DE ACÁ LOS EVENTOS DEL SOCKET
 */
 
 io.on("connection", (socket) => {
-	const req = socket.request;
+    const req = socket.request;
 
-	socket.on('joinRoom', data => {
-		console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
-		if (req.session.room != undefined && req.session.room.length > 0)
-			socket.leave(req.session.room);
-		req.session.room = data.room;
-		socket.join(req.session.room);
+    socket.on('joinRoom', data => {
+        console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
+        if (req.session.room != undefined && req.session.room.length > 0)
+            socket.leave(req.session.room);
+        req.session.room = data.room;
+        socket.join(req.session.room);
 
-		io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
-	});
+        io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
+    });
 
-	socket.on('pingAll', data => {
-		console.log("PING ALL: ", data);
-		io.emit('pingAll', { event: "Ping to all", message: data });
-	});
+    socket.on('pingAll', data => {
+        console.log("PING ALL: ", data);
+        io.emit('pingAll', { event: "Ping to all", message: data });
+    });
 
-	socket.on('sendMessage', data => {
-		io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
-	});
+    socket.on('sendMessage', data => {
+        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+    });
 
-	socket.on('disconnect', () => {
-		console.log("Disconnect");
-	})
+    socket.on('disconnect', () => {
+        console.log("Disconnect");
+    })
 });
 
 app.get('/', function (req, res) {
@@ -134,7 +135,7 @@ app.post('/registro', async function (req, res) {
                 INSERT INTO Usuarios (usuario_mail, password, nombre, foto_perfil) VALUES
                     ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','');
             `)
-            
+
         } else {
             res.send({ res: "Ya existe ese dato", agregado: false })
         }
@@ -172,79 +173,80 @@ app.post("/chats", async function (req, res) {
 //agregar chats
 
 app.post("/agregarChat", async function (req, res) {
-  try {
-    let chatId;
+    try {
+        let chatId;
 
-    if (req.body.es_grupo == 1) {
-      // Insertar el grupo
-      const resultado = await realizarQuery(`
+        if (req.body.es_grupo == 1) {
+            // Insertar el grupo
+            const resultado = await realizarQuery(`
         INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
         VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
       `);
-      
-      chatId = resultado.insertId;
 
-      // Insertar al creador del grupo
-      await realizarQuery(`
+            chatId = resultado.insertId;
+
+            // Insertar al creador del grupo
+            await realizarQuery(`
         INSERT INTO UsuariosPorChat (id_chat, id_usuario)
         VALUES (${chatId}, ${req.body.id_usuario})
       `);
 
-      // Insertar a los demás usuarios por mail
-      for (const mail of req.body.mails) {
-        const usuarios = await realizarQuery(`
+            // Insertar a los demás usuarios por mail
+            for (const mail of req.body.mails) {
+                const usuarios = await realizarQuery(`
           SELECT ID FROM Usuarios WHERE usuario_mail = '${mail}'
         `);
-        if (usuarios.length > 0) {
-          const userId = usuarios[0].ID;
-          await realizarQuery(`
+                if (usuarios.length > 0) {
+                    const userId = usuarios[0].ID;
+                    await realizarQuery(`
             INSERT INTO UsuariosPorChat (id_chat, id_usuario)
             VALUES (${chatId}, ${userId})
           `);
-        }
-    }
-    
-    } else {
-      // Insertar chat individual (campos vacíos salvo es_grupo = 0)
-      const resultado = await realizarQuery(`
+                }
+            }
+
+        } else {
+            // Insertar chat individual (campos vacíos salvo es_grupo = 0)
+            const resultado = await realizarQuery(`
         INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
         VALUES (0, NULL, NULL, NULL)
       `);
-      chatId = resultado.insertId;
+            chatId = resultado.insertId;
 
-      // obtener id del otro usuario por mail
-      const usuarios = await realizarQuery(`
+            // obtener id del otro usuario por mail
+            const usuarios = await realizarQuery(`
         SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
       `);
-      const otroUsuarioId = usuarios[0].ID;
+            const otroUsuarioId = usuarios[0].ID;
 
-      // vincular usuarios al chat
-      await realizarQuery(`
+            // vincular usuarios al chat
+            await realizarQuery(`
         INSERT INTO UsuariosPorChat (id_chat, id_usuario)
         VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
       `);
-    }
+        }
 
-    res.send({ ok: true, id_chat: chatId });
-  } catch (error) {
-    res.status(500).send({
-      ok: false,
-      mensaje: "Error en el servidor",
-      error: error.message,
-    });
-  }
+        res.send({ ok: true, id_chat: chatId });
+    } catch (error) {
+        res.status(500).send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message,
+        });
+    }
 });
 
 //CORREGIR
 app.post('/contacto', async (req, res) => {
     try {
         const contactos = await realizarQuery(`
-            SELECT Chats.ID , Chats.nombre,
+            SELECT Chats.ID , Chats.nombre
             FROM Chats
             INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
             WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
 
         `);
+        
         if (contactos.length === 0) {
             return res.send({ ok: false, mensaje: "No se encontró el contacto" });
         }
@@ -268,32 +270,33 @@ app.post('/contacto', async (req, res) => {
 });
 
 
+
 /* ACA ARRANCA LO DEL SOCKET */
 io.on("connection", (socket) => {
-	const req = socket.request;
+    const req = socket.request;
 
-	socket.on('joinRoom', data => {
-		console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
-		if (req.session.room != undefined && req.session.room.length > 0)
-			socket.leave(req.session.room);
-		req.session.room = data.room;
-		socket.join(req.session.room);
+    socket.on('joinRoom', data => {
+        console.log("🚀 ~ io.on ~ req.session.room:", req.session.room)
+        if (req.session.room != undefined && req.session.room.length > 0)
+            socket.leave(req.session.room);
+        req.session.room = data.room;
+        socket.join(req.session.room);
 
-		io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
-	});
+        io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
+    });
 
-	socket.on('pingAll', data => {
-		console.log("PING ALL: ", data);
-		io.emit('pingAll', { event: "Ping to all", message: data });
-	});
+    socket.on('pingAll', data => {
+        console.log("PING ALL: ", data);
+        io.emit('pingAll', { event: "Ping to all", message: data });
+    });
 
-	socket.on('sendMessage', data => {
-		io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
-	});
+    socket.on('sendMessage', data => {
+        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+    });
 
-	socket.on('disconnect', () => {
-		console.log("Disconnect");
-	})
+    socket.on('disconnect', () => {
+        console.log("Disconnect");
+    })
 });
 
 //subir mensajes a bbdd
