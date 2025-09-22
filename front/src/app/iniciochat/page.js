@@ -39,14 +39,14 @@ export default function ChatPage() {
     }, [socket]);
 
     useEffect(() => {
-    if (!socket) return;
-    socket.on("newMessage", (data) => {
-        console.log("📩 Mensaje recibido:", data);
-        
-    });
-    return () => {
-        socket.off("newMessage");
-    };
+        if (!socket) return;
+        socket.on("newMessage", (data) => {
+            console.log("📩 Mensaje recibido:", data);
+
+        });
+        return () => {
+            socket.off("newMessage");
+        };
     }, [socket]);
 
 
@@ -56,7 +56,7 @@ export default function ChatPage() {
         }
     }, [socket])
 
-    
+
 
     useEffect(() => {
         traerChats()
@@ -73,22 +73,35 @@ export default function ChatPage() {
         }
         setNuevoMensaje("");
     }
-
+/*
     function enviarMensajeRoom() {
-    if (!nuevoMensaje.trim()) return;
-    setUltimoMensaje(nuevoMensaje);
+        if (!nuevoMensaje.trim()) return;
+        setUltimoMensaje(nuevoMensaje);
 
-    if (socket && chatActivo) {
-        socket.emit("sendMessage", { 
-            room: chatActivo.ID,   // el ID del chat que abriste
-            message: nuevoMensaje,
-            usuario: localStorage.getItem("ID")
-        });
+        if (socket && chatActivo) {
+            socket.emit("sendMessage", {
+                room: chatActivo.ID,   // el ID del chat que abriste
+                message: nuevoMensaje,
+                usuario: localStorage.getItem("ID")
+            });
 
-        guardarMensajes(); // guardás en la BD
+            guardarMensajes(); // guardás en la BD
+        }
+        setNuevoMensaje("");
     }
-    setNuevoMensaje("");
-}
+*/
+    function enviarMensajeRoom() {
+        if (!nuevoMensaje.trim() || !chatActivo) return;
+        setUltimoMensaje(nuevoMensaje);
+    
+        if (socket) {
+            socket.emit("sendMessage", { room: chatActivo.ID, message: nuevoMensaje });
+            guardarMensajes();
+        }
+    
+        setNuevoMensaje("");
+    }
+    
 
     async function obtenerNombre() {
         try {
@@ -390,7 +403,7 @@ export default function ChatPage() {
                             value={nuevoMensaje}
                             onChange={(e) => setNuevoMensaje(e.target.value)}
                         />
-                        <Boton1 texto="Enviar" color="wpp" onClick={enviarMensaje} />
+                        <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
                     </footer>
                 )}
             </section>
