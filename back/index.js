@@ -269,8 +269,6 @@ app.post('/contacto', async (req, res) => {
     }
 });
 
-
-
 /* ACA ARRANCA LO DEL SOCKET */
 io.on("connection", (socket) => {
     const req = socket.request;
@@ -291,7 +289,8 @@ io.on("connection", (socket) => {
     });
 
     socket.on('sendMessage', data => {
-        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+        console.log("📤 Mensaje recibido en back:", data);
+        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data, /*usuario: req.session.user*/ usuario: data.usuario   });
     });
 
     socket.on('disconnect', () => {

@@ -39,10 +39,24 @@ export default function ChatPage() {
     }, [socket]);
 
     useEffect(() => {
+    if (!socket) return;
+    socket.on("newMessage", (data) => {
+        console.log("📩 Mensaje recibido:", data);
+        
+    });
+    return () => {
+        socket.off("newMessage");
+    };
+    }, [socket]);
+
+
+    useEffect(() => {
         if (socket) {
             socket.emit("joinRoom", { room: idChatU })
         }
     }, [socket])
+
+    
 
     useEffect(() => {
         traerChats()
@@ -59,6 +73,22 @@ export default function ChatPage() {
         }
         setNuevoMensaje("");
     }
+
+    function enviarMensajeRoom() {
+    if (!nuevoMensaje.trim()) return;
+    setUltimoMensaje(nuevoMensaje);
+
+    if (socket && chatActivo) {
+        socket.emit("sendMessage", { 
+            room: chatActivo.ID,   // el ID del chat que abriste
+            message: nuevoMensaje,
+            usuario: localStorage.getItem("ID")
+        });
+
+        guardarMensajes(); // guardás en la BD
+    }
+    setNuevoMensaje("");
+}
 
     async function obtenerNombre() {
         try {
