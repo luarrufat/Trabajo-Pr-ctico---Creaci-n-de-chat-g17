@@ -39,14 +39,14 @@ export default function ChatPage() {
     }, [socket]);
 
     useEffect(() => {
-    if (!socket) return;
-    socket.on("newMessage", (data) => {
-        console.log("📩 Mensaje recibido:", data);
-        
-    });
-    return () => {
-        socket.off("newMessage");
-    };
+        if (!socket) return;
+        socket.on("newMessage", (data) => {
+            console.log("📩 Mensaje recibido:", data);
+
+        });
+        return () => {
+            socket.off("newMessage");
+        };
     }, [socket]);
 
 
@@ -56,7 +56,7 @@ export default function ChatPage() {
         }
     }, [socket])
 
-    
+
 
     useEffect(() => {
         traerChats()
@@ -75,20 +75,20 @@ export default function ChatPage() {
     }
 
     function enviarMensajeRoom() {
-    if (!nuevoMensaje.trim()) return;
-    setUltimoMensaje(nuevoMensaje);
+        if (!nuevoMensaje.trim()) return;
+        setUltimoMensaje(nuevoMensaje);
 
-    if (socket && chatActivo) {
-        socket.emit("sendMessage", { 
-            room: chatActivo.ID,   // el ID del chat que abriste
-            message: nuevoMensaje,
-            usuario: localStorage.getItem("ID")
-        });
+        if (socket && chatActivo) {
+            socket.emit("sendMessage", {
+                room: chatActivo.ID,   // el ID del chat que abriste
+                message: nuevoMensaje,
+                usuario: localStorage.getItem("ID")
+            });
 
-        guardarMensajes(); // guardás en la BD
+            guardarMensajes(); // guardás en la BD
+        }
+        setNuevoMensaje("");
     }
-    setNuevoMensaje("");
-}
 
     async function obtenerNombre() {
         try {
@@ -329,13 +329,14 @@ export default function ChatPage() {
                             nombre={chat.nombre}
                             color="contactos"
                             onClick={() => setChatActivo(chat)}
+                            foto={chat.foto}
                         />
                     </li>
                 ))}
 
             </div>
             <Popup trigger={<BotonRedondo texto="+" />}>
-                <div className="posicionPopUp">
+                <div className="popupContainer">
                     <p>Crear un nuevo chat</p>
                     {esGrupo ? (
                         <>
@@ -344,15 +345,15 @@ export default function ChatPage() {
                                 Clikee si desea crear un chat individual
                             </label>
 
-                            <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} />
-                            <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} />
-                            <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} />
+                            <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} color="registro" />
+                            <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} color="registro" />
+                            <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} color="registro" />
                             <h4>Usuarios del grupo</h4>
                             {mails.map((mail, i) => (
                                 <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />
                             ))}
-                            <button onClick={agregarInput}>Añadir otro usuario</button>
-                            <button onClick={crearGrupo}>Crear grupo</button>
+                            <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
+                            <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
 
                         </>
                     ) : (
@@ -361,7 +362,7 @@ export default function ChatPage() {
                                 <Input type="checkbox" onChange={handleCheckbox} />
                                 Clikee si desea crear un grupo
                             </label>
-                            <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} />
+                            <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} color="registro" />
                             <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
                         </>
                     )}
