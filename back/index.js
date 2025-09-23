@@ -182,7 +182,7 @@ app.post("/agregarChat", async function (req, res) {
         INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
         VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
       `);
-
+ 
             chatId = resultado.insertId;
 
             // Insertar al creador del grupo
