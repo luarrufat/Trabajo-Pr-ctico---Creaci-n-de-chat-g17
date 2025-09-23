@@ -50,7 +50,7 @@ export default function ChatPage() {
             };
         }, [socket]);
     */
-
+    
     useEffect(() => {
         if (!socket) return;
 
@@ -79,8 +79,6 @@ export default function ChatPage() {
             socket.emit("joinRoom", { room: idChatU })
         }
     }, [chatActivo])
-
-
 
 
     useEffect(() => {
@@ -133,19 +131,7 @@ export default function ChatPage() {
 
         setNuevoMensaje("");
     }
-    if (!nuevoMensaje.trim()) return;
-    setUltimoMensaje(nuevoMensaje);
-
-    if (socket && chatActivo) {
-        socket.emit("sendMessage", {
-            room: chatActivo.ID,   // el ID del chat que abriste
-            message: nuevoMensaje,
-            usuario: localStorage.getItem("ID")
-        });
-
-        guardarMensajes(); // guardás en la BD
-    }
-    setNuevoMensaje("");
+   
 
 
     async function obtenerNombre() {
@@ -370,101 +356,104 @@ export default function ChatPage() {
     }
 
     return (
-        <div className={styles.chatContainer}>
-            {/* Panel de contactos */}
-            <div className={styles.contactos}>
-                {/* <input
+        <>
+            <div className={styles.chatContainer}>
+                {/* Panel de contactos */}
+                <div className={styles.contactos}>
+                    {/* <input
                     type="text"
                     placeholder="Buscar contacto"
                     className={styles.buscador}
                     id="buscar"
                 />*/}
 
-                <Input type="text" placeholder="Buscar" id="buscar" color="registro" />
-                {contacts.length !== 0 && contacts.map((chat) => (
-                    <li key={chat.ID}>
-                        <Contacto
-                            nombre={chat.nombre}
-                            color="contactos"
-                            onClick={() => setChatActivo(chat)}
-                            foto={chat.foto}
-                        />
-                    </li>
-                ))}
-
-            </div>
-            <Popup trigger={<BotonRedondo texto="+" />}>
-                <div className="popupContainer">
-                    <p>Crear un nuevo chat</p>
-                    {esGrupo ? (
-                        <>
-                            <label>
-                                <Input type="checkbox" onChange={handleCheckbox} />
-                                Clikee si desea crear un chat individual
-                            </label>
-
-                            <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} color="registro" />
-                            <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} color="registro" />
-                            <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} color="registro" />
-                            <h4>Usuarios del grupo</h4>
-                            {mails.map((mail, i) => (
-                                <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />
-                            ))}
-                            <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
-                            <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
-
-                        </>
-                    ) : (
-                        <>
-                            <label>
-                                <Input type="checkbox" onChange={handleCheckbox} />
-                                Clikee si desea crear un grupo
-                            </label>
-                            <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} color="registro" />
-                            <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
-                        </>
-                    )}
-                </div>
-            </Popup>
-            {/* Chat principal */}
-            <section className={styles.chat}>
-                <header className={styles.chatHeader}>
-                    {chatActivo ? (
-                        <h2>⚪ {chatActivo.nombre}</h2>
-                    ) : (
-                        <h2>Selecciona un chat</h2>
-                    )}
-                </header>
-
-                {/* Lista de mensajes */}
-                <div className={styles.mensajesContainer}>
-                    {mensajes.map((msg, index) => (
-                        <Mensajes
-                            key={index}
-                            color="mensajes"
-                            lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
-                            texto={msg.texto}
-                        />
+                    <Input type="text" placeholder="Buscar" id="buscar" color="registro" />
+                    {contacts.length !== 0 && contacts.map((chat) => (
+                        <li key={chat.ID}>
+                            <Contacto
+                                nombre={chat.nombre}
+                                color="contactos"
+                                onClick={() => setChatActivo(chat)}
+                                foto={chat.foto}
+                            />
+                        </li>
                     ))}
+
                 </div>
+                <Popup trigger={<BotonRedondo texto="+" />}>
+                    <div className="popupContainer">
+                        <p>Crear un nuevo chat</p>
+                        {esGrupo ? (
+                            <>
+                                <label>
+                                    <Input type="checkbox" onChange={handleCheckbox} />
+                                    Clikee si desea crear un chat individual
+                                </label>
 
-                {/* Mostrar el último mensaje enviado */}
-                {chatActivo && ultimoMensaje && (
-                    <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />
-                )}
+                                <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} color="registro" />
+                                <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} color="registro" />
+                                <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} color="registro" />
+                                <h4>Usuarios del grupo</h4>
+                                {mails.map((mail, i) => (
+                                    <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />
+                                ))}
+                                <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
+                                <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
 
-                {chatActivo && (
-                    <footer className={styles.chatInput}>
-                        <input
-                            type="text"
-                            placeholder="Escribe tu mensaje..."
-                            value={nuevoMensaje}
-                            onChange={(e) => setNuevoMensaje(e.target.value)}
-                        />
-                        <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
-                    </footer>
-                )}
-            </section>
-        </div>
+                            </>
+                        ) : (
+                            <>
+                                <label>
+                                    <Input type="checkbox" onChange={handleCheckbox} />
+                                    Clikee si desea crear un grupo
+                                </label>
+                                <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} color="registro" />
+                                <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
+                            </>
+                        )}
+                    </div>
+                </Popup>
+                {/* Chat principal */}
+                <section className={styles.chat}>
+                    <header className={styles.chatHeader}>
+                        {chatActivo ? (
+                            <h2>⚪ {chatActivo.nombre}</h2>
+                        ) : (
+                            <h2>Selecciona un chat</h2>
+                        )}
+                    </header>
+
+                    {/* Lista de mensajes */}
+                    <div className={styles.mensajesContainer}>
+                        {mensajes.map((msg, index) => (
+                            <Mensajes
+                                key={index}
+                                color="mensajes"
+                                lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
+                                texto={msg.texto}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Mostrar el último mensaje enviado */}
+                    {chatActivo && ultimoMensaje && (
+                        <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />
+                    )}
+
+                    {chatActivo && (
+                        <footer className={styles.chatInput}>
+                            <input
+                                type="text"
+                                placeholder="Escribe tu mensaje..."
+                                value={nuevoMensaje}
+                                onChange={(e) => setNuevoMensaje(e.target.value)}
+                            />
+                            <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
+                        </footer>
+                    )}
+                </section>
+            </div>
+        </>
+
     );
 }
