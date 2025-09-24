@@ -29,6 +29,10 @@ export default function ChatPage() {
     const [mails, setMails] = useState(["", ""])
     const [chatActivo, setChatActivo] = useState(null);
     const [mensajes, setMensajes] = useState([]);
+    const [nombreChat, setNombreChat] = useState([]);
+    const [nombreChat2, setNombreChat2] = useState([]);
+    const todosLosContactos = [...contacts, ...nombreChat];
+
 
 
     useEffect(() => {
@@ -38,19 +42,7 @@ export default function ChatPage() {
             console.log("PING ALL DEL FRONT: ", data);
         });
     }, [socket]);
-    /*
-        useEffect(() => {
-            if (!socket) return;
-            socket.on("newMessage", (data) => {
-                console.log("📩 Mensaje recibido:", data);
-    
-            });
-            return () => {
-                socket.off("newMessage");
-            };
-        }, [socket]);
-    */
-    
+
     useEffect(() => {
         if (!socket) return;
 
@@ -80,10 +72,39 @@ export default function ChatPage() {
         }
     }, [chatActivo])
 
+    //TRABAJANDO
+    useEffect(() => {
+        const id_usuario = localStorage.getItem("ID");
+        traerChats();
+        traerNombres();
+    }, []);
 
     useEffect(() => {
-        traerChats()
-    }, [])
+        console.log("CONTACTS:", contacts);
+        console.log("NOMBRECHAT:", nombreChat);
+    }, [contacts, nombreChat]);
+
+    useEffect(() => {
+        async function cargar() {
+            try {
+                const res = await fetch("http://localhost:4000/traerUsuarios", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
+                });
+
+                const data = await res.json();
+                console.log("📩 traerUsuarios ->", data);
+
+                setNombreChat(data);
+            } catch (err) {
+                console.error("Error traerUsuarios:", err);
+            }
+        }
+
+        cargar();
+    }, []);
+
 
     function enviarMensaje() {
         if (!nuevoMensaje.trim()) return;
@@ -131,8 +152,6 @@ export default function ChatPage() {
 
         setNuevoMensaje("");
     }
-   
-
 
     async function obtenerNombre() {
         try {
@@ -161,6 +180,9 @@ export default function ChatPage() {
             }
         }
         contacto();
+
+
+
     }, []);
 
     async function traerChats() {
@@ -177,6 +199,24 @@ export default function ChatPage() {
             console.error("Error al traer chats:", error)
         }
     }
+
+    async function traerNombres() {
+        try {
+            const response = await fetch("http://localhost:4000/traerUsuarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
+            });
+            const data = await response.json();
+            console.log("traerUsuarios ->", data);
+            if (data.ok && data.usuarios) setNombreChat(data.usuarios);
+            else setNombreChat([]);
+        } catch (error) {
+            console.error("Error al traer nombres:", error);
+            setNombreChat([]);
+        }
+    }
+
 
     function handleCheckbox(event) {
         setEsGrupo(event.target.checked);
@@ -217,6 +257,7 @@ export default function ChatPage() {
         const result = await response.json();
         if (result.ok == true) {
             traerChats()
+
         }
     }
 
@@ -365,19 +406,34 @@ export default function ChatPage() {
                     placeholder="Buscar contacto"
                     className={styles.buscador}
                     id="buscar"
-                />*/}
+                    />*/}
 
-                    <Input type="text" placeholder="Buscar" id="buscar" color="registro" />
-                    {contacts.length !== 0 && contacts.map((chat) => (
-                        <li key={chat.ID}>
-                            <Contacto
-                                nombre={chat.nombre}
-                                color="contactos"
-                                onClick={() => setChatActivo(chat)}
-                                foto={chat.foto}
-                            />
-                        </li>
-                    ))}
+                    <ul>
+                        {todosLosContactos.map((u) => (
+                            <li key={u.ID}>
+                                <Contacto
+                                    nombre={u.nombre}
+                                    color="contactos"
+                                    onClick={() => setChatActivo(u)}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                    <ul>
+                        {nombreChat.map((u, index) => (
+                            <li key={index}>
+                                <Contacto
+                                    nombre={u.nombre}
+                                    color="contactos"
+                                    onClick={() => {
+                                        const chatId = u.id_chat;
+                                        setChatActivo({ ID: chatId, nombre: u.nombre });
+                                    }}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+
 
                 </div>
                 <Popup trigger={<BotonRedondo texto="+" />}>

@@ -170,6 +170,32 @@ app.post("/chats", async function (req, res) {
     }
 });
 
+app.post("/traerUsuarios", async function (req, res) {
+    try {
+        console.log("BODY:", req.body);
+
+        const resultado = await realizarQuery(`
+            SELECT u.ID, u.nombre, upc.id_chat
+            FROM Usuarios u
+            INNER JOIN UsuariosPorChat upc ON upc.id_usuario = u.ID
+            WHERE upc.id_chat IN (
+                SELECT id_chat
+                FROM UsuariosPorChat
+                WHERE id_usuario = ${req.body.id_usuario}
+            )
+            AND u.ID != ${req.body.id_usuario}
+        `);
+
+        console.log("RESULTADO:", resultado);
+        res.send(resultado);
+    } catch (error) {
+        console.error("ERROR traerUsuarios:", error.message);
+        res.send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
+});
+
+
+
 //agregar chats
 
 app.post("/agregarChat", async function (req, res) {
@@ -182,7 +208,7 @@ app.post("/agregarChat", async function (req, res) {
         INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
         VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
       `);
- 
+
             chatId = resultado.insertId;
 
             // Insertar al creador del grupo
@@ -246,7 +272,7 @@ app.post('/contacto', async (req, res) => {
             WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
 
         `);
-        
+
         if (contactos.length === 0) {
             return res.send({ ok: false, mensaje: "No se encontró el contacto" });
         }
@@ -263,7 +289,7 @@ app.post('/contacto', async (req, res) => {
     } catch (error) {
         res.status(500).send({
             ok: false,
-            mensaje: "Error en el servido ASDRAAAAAAA", 
+            mensaje: "Error en el servido ASDRAAAAAAA",
             error: error.message,
         });
     }
@@ -290,7 +316,7 @@ io.on("connection", (socket) => {
 
     socket.on('sendMessage', data => {
         console.log("📤 Mensaje recibido en back:", data);
-        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data, /*usuario: req.session.user*/ usuario: data.usuario   });
+        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data, /*usuario: req.session.user*/ usuario: data.usuario });
     });
 
     socket.on('disconnect', () => {
