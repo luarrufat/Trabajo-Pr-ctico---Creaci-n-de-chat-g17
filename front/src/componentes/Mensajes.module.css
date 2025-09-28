@@ -4,9 +4,10 @@
     padding: 10px 14px;
     border-radius: 16px 16px 0 16px; 
     font-size: 16px;
-    margin: 8px 8px;
+    margin: 8px 0;
     /*modificaciones chat gpt*/
-    display: inline-block;  /* 🔑 Se adapta al contenido */
+    /*display: inline-block;  /* 🔑 Se adapta al contenido */
+    display: flex;
     max-width: 70%;         /* 🔑 No se pasa de cierto ancho */
     word-wrap: break-word;  /* 🔑 Si el texto es muy largo, salta de línea */
 }

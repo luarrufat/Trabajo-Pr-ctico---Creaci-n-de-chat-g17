@@ -28,6 +28,11 @@ export default function ChatPage() {
     const [mail, setMail] = useState("")
     const [mails, setMails] = useState(["", ""])
     const [chatActivo, setChatActivo] = useState(null);
+    const [mensajes, setMensajes] = useState([]);
+    const [nombreChat, setNombreChat] = useState([]);
+    const [nombreChat2, setNombreChat2] = useState([]);
+    const todosLosContactos = [...contacts, ...nombreChat];
+
 
 
     useEffect(() => {
@@ -43,24 +48,62 @@ export default function ChatPage() {
         socket.on("newMessage", (data) => {
             console.log("📩 Mensaje recibido:", data);
 
+            if (chatActivo && data.room === chatActivo.ID) {
+                setMensajes((actual) => [
+                    ...actual,
+                    {
+                        texto: data.message.texto ?? data.message,
+                        autor: data.message.autor ?? "otro",
+                        chatId: data.room
+                    }
+                ]);
+            }
         });
+
         return () => {
             socket.off("newMessage");
         };
-    }, [socket]);
-
+    }, [socket, chatActivo]);
 
     useEffect(() => {
-        if (socket) {
+        if (chatActivo != undefined) {
             socket.emit("joinRoom", { room: idChatU })
         }
-    }, [socket])
+    }, [chatActivo])
 
-
+    //TRABAJANDO
+    useEffect(() => {
+        const id_usuario = localStorage.getItem("ID");
+        traerChats();
+        traerNombres();
+    }, []);
 
     useEffect(() => {
-        traerChats()
-    }, [])
+        console.log("CONTACTS:", contacts);
+        console.log("NOMBRECHAT:", nombreChat);
+    }, [contacts, nombreChat]);
+
+    useEffect(() => {
+        async function cargar() {
+            try {
+                const res = await fetch("http://localhost:4000/traerUsuarios", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
+                });
+
+                const data = await res.json();
+                console.log("📩 traerUsuarios ->", data);
+
+                setNombreChat(data);
+            } catch (err) {
+                console.error("Error traerUsuarios:", err);
+            }
+        }
+
+        cargar();
+    }, []);
+
 
     function enviarMensaje() {
         if (!nuevoMensaje.trim()) return;
@@ -90,7 +133,7 @@ export default function ChatPage() {
         setNuevoMensaje("");
     }
 */
-    function enviarMensajeRoom() {
+  /*  function enviarMensajeRoom() {
         if (!nuevoMensaje.trim() || !chatActivo) return;
         setUltimoMensaje(nuevoMensaje);
     
@@ -100,8 +143,43 @@ export default function ChatPage() {
         }
     
         setNuevoMensaje("");
+    }*/
+    
+    /*
+    function enviarMensajeRoom() {
+    if (!nuevoMensaje.trim() || !chatActivo) return;
+    setUltimoMensaje(nuevoMensaje);
+    
+    if (socket) {
+        socket.emit("sendMessage", { room: chatActivo.ID, message: nuevoMensaje });
+        guardarMensajes();
     }
     
+    setNuevoMensaje("");
+    }
+    */
+
+    function enviarMensajeRoom() {
+        if (!nuevoMensaje.trim() || !chatActivo) return;
+
+        const mensaje = {
+            texto: nuevoMensaje,
+            autor: localStorage.getItem("ID"),
+            chatId: chatActivo.ID,
+        };
+
+        setMensajes([...mensajes, mensaje]);
+
+        if (socket) {
+            socket.emit("sendMessage", {
+                room: chatActivo.ID,
+                message: mensaje,
+            });
+            guardarMensajes();
+        }
+
+        setNuevoMensaje("");
+    }
 
     async function obtenerNombre() {
         try {
@@ -130,6 +208,9 @@ export default function ChatPage() {
             }
         }
         contacto();
+
+
+
     }, []);
 
     async function traerChats() {
@@ -146,6 +227,24 @@ export default function ChatPage() {
             console.error("Error al traer chats:", error)
         }
     }
+
+    async function traerNombres() {
+        try {
+            const response = await fetch("http://localhost:4000/traerUsuarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
+            });
+            const data = await response.json();
+            console.log("traerUsuarios ->", data);
+            if (data.ok && data.usuarios) setNombreChat(data.usuarios);
+            else setNombreChat([]);
+        } catch (error) {
+            console.error("Error al traer nombres:", error);
+            setNombreChat([]);
+        }
+    }
+
 
     function handleCheckbox(event) {
         setEsGrupo(event.target.checked);
@@ -186,6 +285,7 @@ export default function ChatPage() {
         const result = await response.json();
         if (result.ok == true) {
             traerChats()
+
         }
     }
 
@@ -325,88 +425,119 @@ export default function ChatPage() {
     }
 
     return (
-        <div className={styles.chatContainer}>
-            {/* Panel de contactos */}
-            <div className={styles.contactos}>
-                {/* <input
+        <>
+            <div className={styles.chatContainer}>
+                {/* Panel de contactos */}
+                <div className={styles.contactos}>
+                    {/* <input
                     type="text"
                     placeholder="Buscar contacto"
                     className={styles.buscador}
                     id="buscar"
-                />*/}
+                    />*/}
 
-                <Input type="text" placeholder="Buscar" id="buscar" color="registro" />
-                {contacts.length !== 0 && contacts.map((chat) => (
-                    <li key={chat.ID}>
-                        <Contacto
-                            nombre={chat.nombre}
-                            color="contactos"
-                            onClick={() => setChatActivo(chat)}
-                        />
-                    </li>
-                ))}
+                    <ul>
+                        {todosLosContactos.map((u) => (
+                            <li key={u.ID}>
+                                <Contacto
+                                    nombre={u.nombre}
+                                    color="contactos"
+                                    onClick={() => setChatActivo(u)}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                    <ul>
+                        {nombreChat.map((u, index) => (
+                            <li key={index}>
+                                <Contacto
+                                    nombre={u.nombre}
+                                    color="contactos"
+                                    onClick={() => {
+                                        const chatId = u.id_chat;
+                                        setChatActivo({ ID: chatId, nombre: u.nombre });
+                                    }}
+                                />
+                            </li>
+                        ))}
+                    </ul>
 
-            </div>
-            <Popup trigger={<BotonRedondo texto="+" />}>
-                <div className="posicionPopUp">
-                    <p>Crear un nuevo chat</p>
-                    {esGrupo ? (
-                        <>
-                            <label>
-                                <Input type="checkbox" onChange={handleCheckbox} />
-                                Clikee si desea crear un chat individual
-                            </label>
 
-                            <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} />
-                            <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} />
-                            <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} />
-                            <h4>Usuarios del grupo</h4>
-                            {mails.map((mail, i) => (
-                                <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />
-                            ))}
-                            <button onClick={agregarInput}>Añadir otro usuario</button>
-                            <button onClick={crearGrupo}>Crear grupo</button>
-
-                        </>
-                    ) : (
-                        <>
-                            <label>
-                                <Input type="checkbox" onChange={handleCheckbox} />
-                                Clikee si desea crear un grupo
-                            </label>
-                            <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} />
-                            <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
-                        </>
-                    )}
                 </div>
-            </Popup>
-            {/* Chat principal */}
-            <section className={styles.chat}>
-                <header className={styles.chatHeader}>
-                    {chatActivo ? (
-                        <h2>⚪ {chatActivo.nombre}</h2>
-                    ) : (
-                        <h2>Selecciona un chat</h2>
+                <Popup trigger={<BotonRedondo texto="+" />}>
+                    <div className="popupContainer">
+                        <p>Crear un nuevo chat</p>
+                        {esGrupo ? (
+                            <>
+                                <label>
+                                    <Input type="checkbox" onChange={handleCheckbox} />
+                                    Clikee si desea crear un chat individual
+                                </label>
+
+                                <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} color="registro" />
+                                <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} color="registro" />
+                                <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value) }} color="registro" />
+                                <h4>Usuarios del grupo</h4>
+                                {mails.map((mail, i) => (
+                                    <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />
+                                ))}
+                                <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
+                                <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
+
+                            </>
+                        ) : (
+                            <>
+                                <label>
+                                    <Input type="checkbox" onChange={handleCheckbox} />
+                                    Clikee si desea crear un grupo
+                                </label>
+                                <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} color="registro" />
+                                <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
+                            </>
+                        )}
+                    </div>
+                </Popup>
+                {/* Chat principal */}
+                <section className={styles.chat}>
+                    <header className={styles.chatHeader}>
+                        {chatActivo ? (
+                            <h2>⚪ {chatActivo.nombre}</h2>
+                        ) : (
+                            <h2>Selecciona un chat</h2>
+                        )}
+                    </header>
+
+                    {/* Lista de mensajes */}
+                    <div className={styles.mensajesContainer}>
+                        {mensajes.map((msg, index) => (
+                            <Mensajes
+                                key={index}
+                                color="mensajes"
+                                lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
+                                texto={msg.texto}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Mostrar el último mensaje enviado */}
+                    {chatActivo && ultimoMensaje && (
+                        <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />
                     )}
-                </header>
 
-                {/* Mostrar el último mensaje enviado */}
-                {chatActivo && ultimoMensaje && (
-                    <Mensajes color="mensajes" lado="mensajeyo" texto={ultimoMensaje} />
-                )}
+                    {chatActivo && (
+                        <footer className={styles.chatInput}>
+                            <input
+                                type="text"
+                                placeholder="Escribe tu mensaje..."
+                                value={nuevoMensaje}
+                                onChange={(e) => setNuevoMensaje(e.target.value)}
+                            />
+                            <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
+                        </footer>
+                    )}
+                </section>
+            </div>
+        </>
 
-                {chatActivo && (
-                    <footer className={styles.chatInput}>
-                        <input
-                            type="text"
-                            placeholder="Escribe tu mensaje..."
-                            value={nuevoMensaje}
-                            onChange={(e) => setNuevoMensaje(e.target.value)}
-                        />
-                        <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
-                    </footer>
-                )}
-            </section>
-        </div>
     );
 }
