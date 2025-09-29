@@ -182,7 +182,7 @@ export default function InicioPage() {
 
               <Input placeholder="Nombre del grupo" onChange={(event) => { setNombre(event.target.value) }} color="registro"/>
               <Input placeholder="Foto (URL)" onChange={(event) => { setFoto(event.target.value) }} color="registro"/>
-              <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value)}} color="registro" />
+               <Input placeholder="Descripción del grupo" onChange={(event) => { setDescripcion(event.target.value)}} color="registro" />
               <h4>Usuarios del grupo</h4>
               {mails.map((mail, i) => (
                 <Input key={i} type="text" placeholder="Correo del usuario" value={mail} onChange={(e) => actualizarMail(i, e.target.value)} color="registro" />

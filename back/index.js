@@ -69,10 +69,15 @@ io.on("connection", (socket) => {
         console.log("PING ALL: ", data);
         io.emit('pingAll', { event: "Ping to all", message: data });
     });
-
-    socket.on('sendMessage', data => {
-        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+    /*
+        socket.on('sendMessage', data => {
+            io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+        });*/
+    socket.on('sendMessage', ({ room, message }) => {
+        io.to(room).emit('newMessage', { room, message });
     });
+
+
 
     socket.on('disconnect', () => {
         console.log("Disconnect");
@@ -365,6 +370,25 @@ app.get('/infoUsuario', async (req, res) => {
             usuario: usuario[0],
         });
     } catch (error) {
+        res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
+});
+
+app.post('/encontrarMensajesChat', async (req, res) => { 
+    const { chatSeleccionadoId } = req.body;
+    console.log("Body recibido:", req.body);
+
+    try {
+        const respuesta = await realizarQuery(`
+            SELECT * 
+            FROM Mensajes
+            WHERE id_chat = ${chatSeleccionadoId}
+            ORDER BY fecha_hora ASC
+        `);
+
+        res.json({ ok: true, mensajes: respuesta });
+    } catch (error) {
+        console.error("Error al traer mensajes:", error);
         res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
     }
 });
