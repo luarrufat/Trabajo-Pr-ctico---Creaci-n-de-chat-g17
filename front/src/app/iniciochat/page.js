@@ -42,28 +42,73 @@ export default function ChatPage() {
             console.log("PING ALL DEL FRONT: ", data);
         });
     }, [socket]);
-
+    /*
+        useEffect(() => {
+            if (!socket) return;
+            socket.on("newMessage", (data) => {
+                console.log("📩 Mensaje recibido:", data);
+    
+                if (chatActivo && data.room === chatActivo.ID) {
+                    setMensajes((actual) => [
+                        ...actual,
+                        {
+                            texto: data.message.texto ?? data.message,
+                            autor: data.message.autor ?? "otro",
+                            chatId: data.room
+                        }
+                    ]);
+                }
+            });
+    
+            return () => {
+                socket.off("newMessage");
+            };
+        }, [socket, chatActivo]);
+    */
+   /*
     useEffect(() => {
         if (!socket) return;
-        socket.on("newMessage", (data) => {
+
+        const handler = (data) => {
             console.log("📩 Mensaje recibido:", data);
 
+            // me aseguro de que sea del chat abierto
             if (chatActivo && data.room === chatActivo.ID) {
-                setMensajes((actual) => [
-                    ...actual,
-                    {
-                        texto: data.message.texto ?? data.message,
-                        autor: data.message.autor ?? "otro",
-                        chatId: data.room
-                    }
-                ]);
+                const nuevoMensaje = {
+                    texto: data.message.texto,   // solo el texto
+                    autor: data.message.autor,   // quien lo mandó
+                    chatId: data.room
+                };
+
+                // lo agrego a la lista de mensajes
+                setMensajes((mensajes) => [...mensajes, nuevoMensaje]);
             }
-        });
+        };
+
+        socket.on("newMessage", handler);
 
         return () => {
-            socket.off("newMessage");
+            socket.off("newMessage", handler);
         };
     }, [socket, chatActivo]);
+*/
+    useEffect(() => {
+        if (!socket) return;
+
+        const handler = ({ room, message }) => {
+            console.log("📩 Mensaje recibido:", { room, message });
+
+            if (chatActivo && room === chatActivo.ID) {
+                setMensajes((prev) => [...prev, message]);
+            }
+        };
+
+        socket.on("newMessage", handler);
+
+        return () => socket.off("newMessage", handler);
+    }, [socket, chatActivo]);
+
+
 
     useEffect(() => {
         if (chatActivo != undefined) {
@@ -116,35 +161,35 @@ export default function ChatPage() {
         }
         setNuevoMensaje("");
     }
-/*
-    function enviarMensajeRoom() {
-        if (!nuevoMensaje.trim()) return;
-        setUltimoMensaje(nuevoMensaje);
-
-        if (socket && chatActivo) {
-            socket.emit("sendMessage", {
-                room: chatActivo.ID,   // el ID del chat que abriste
-                message: nuevoMensaje,
-                usuario: localStorage.getItem("ID")
-            });
-
-            guardarMensajes(); // guardás en la BD
+    /*
+        function enviarMensajeRoom() {
+            if (!nuevoMensaje.trim()) return;
+            setUltimoMensaje(nuevoMensaje);
+    
+            if (socket && chatActivo) {
+                socket.emit("sendMessage", {
+                    room: chatActivo.ID,   // el ID del chat que abriste
+                    message: nuevoMensaje,
+                    usuario: localStorage.getItem("ID")
+                });
+    
+                guardarMensajes(); // guardás en la BD
+            }
+            setNuevoMensaje("");
         }
-        setNuevoMensaje("");
-    }
-*/
-  /*  function enviarMensajeRoom() {
-        if (!nuevoMensaje.trim() || !chatActivo) return;
-        setUltimoMensaje(nuevoMensaje);
-    
-        if (socket) {
-            socket.emit("sendMessage", { room: chatActivo.ID, message: nuevoMensaje });
-            guardarMensajes();
-        }
-    
-        setNuevoMensaje("");
-    }*/
-    
+    */
+    /*  function enviarMensajeRoom() {
+          if (!nuevoMensaje.trim() || !chatActivo) return;
+          setUltimoMensaje(nuevoMensaje);
+      
+          if (socket) {
+              socket.emit("sendMessage", { room: chatActivo.ID, message: nuevoMensaje });
+              guardarMensajes();
+          }
+      
+          setNuevoMensaje("");
+      }*/
+
     /*
     function enviarMensajeRoom() {
     if (!nuevoMensaje.trim() || !chatActivo) return;
@@ -168,7 +213,8 @@ export default function ChatPage() {
             chatId: chatActivo.ID,
         };
 
-        setMensajes([...mensajes, mensaje]);
+        setMensajes((prev) => [...prev, mensaje]);
+
 
         if (socket) {
             socket.emit("sendMessage", {
@@ -180,6 +226,8 @@ export default function ChatPage() {
 
         setNuevoMensaje("");
     }
+
+
 
     async function obtenerNombre() {
         try {

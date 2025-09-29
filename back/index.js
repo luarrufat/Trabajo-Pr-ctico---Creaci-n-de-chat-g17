@@ -69,10 +69,15 @@ io.on("connection", (socket) => {
         console.log("PING ALL: ", data);
         io.emit('pingAll', { event: "Ping to all", message: data });
     });
-
-    socket.on('sendMessage', data => {
-        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+    /*
+        socket.on('sendMessage', data => {
+            io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+        });*/
+    socket.on('sendMessage', ({ room, message }) => {
+        io.to(room).emit('newMessage', { room, message });
     });
+
+
 
     socket.on('disconnect', () => {
         console.log("Disconnect");
