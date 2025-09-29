@@ -368,3 +368,25 @@ app.get('/infoUsuario', async (req, res) => {
         res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
     }
 });
+
+
+//PRUEBA
+
+app.get('/traerUsuarios', async (req, res) => {
+    try {
+        const usuario = await realizarQuery(
+            "SELECT nombre FROM Usuarios LIMIT 10"
+        );
+
+        if (usuario.length === 0) {
+            return res.send({ ok: false, mensaje: "Usuario no encontrado" });
+        }
+
+        res.send({
+            ok: true,
+            usuario: usuario,
+        });
+    } catch (error) {
+        res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
+});
