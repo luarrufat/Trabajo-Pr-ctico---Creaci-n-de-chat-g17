@@ -1,20 +1,19 @@
 "use client"
-
 import clsx from "clsx"
 import styles from "@/componentes/Mensajes.module.css"
 
-export default function Mensajes(props) {
+export default function Mensajes({ lado, texto, hora }) {
     return (
-        <div className={
-            clsx(
+        <div className={clsx(
+            styles.mensajes,
             {
-                [styles.mensajes]: props.color == "mensajes",
-                [styles.mensajeyo]: props.lado == "mensajeyo",
+                [styles.mensajeyo]: lado === "mensajeyo",
+                [styles.mensajeotro]: lado === "mensajeotro"
             }
-        )
-        }><h2>{props.texto}</h2>
+        )}>
+            <p>{texto}</p>
+            {hora && <h5 className={styles.hora}>{hora}</h5>}
         </div>
     );
 }
 
- 
