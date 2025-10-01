@@ -327,7 +327,7 @@ export default function ChatPage() {
                 value={nuevoMensaje}
                 onChange={(e) => setNuevoMensaje(e.target.value)}
               />
-              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
+              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom}/>
             </div>
           </footer>
         )}

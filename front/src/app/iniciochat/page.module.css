@@ -75,8 +75,12 @@
     gap: 10px;
     width: 100%;
     box-sizing: border-box;
+    width: 100%;
 }
+.inputContainer{
+    width: 100%;
 
+}
 .chatInput input {
     flex: 1;
     padding: 12px 15px;
@@ -84,6 +88,8 @@
     border: 1px solid #ccc;
     border-radius: 8px;
     outline: none;
+    margin-right: 10px;
+    width: 90%;
 }
 
 /* Botones y otros inputs */
