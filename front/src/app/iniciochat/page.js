@@ -93,9 +93,17 @@ export default function ChatPage() {
                     body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
                 });
 
-                const data = await res.json();
+                let data = await res.json();
                 console.log("📩 traerUsuarios ->", data);
 
+                for (let i = 0; i < data.length; i++) {
+                    for (let j = 0; j < data.length; j++) {
+                        if (data[i].nombre == data[j].nombre && i != j) {
+                            data.splice(j, 1)
+                        }
+                    }
+                }
+                console.log("Filtrado: ", data)
                 setNombreChat(data);
             } catch (err) {
                 console.error("Error traerUsuarios:", err);
@@ -418,32 +426,21 @@ export default function ChatPage() {
                     className={styles.buscador}
                     id="buscar"
                     />*/}
-
+                    <Title texto="Chats" color="registro"/>
+                    <Input placeholder="Buscar" id="buscar" color="registro" />
                     <ul>
                         {todosLosContactos.map((u) => (
-                            <li key={u.ID}>
+                            <li key={u.ID + u.nombre}>
                                 <Contacto
                                     nombre={u.nombre}
                                     color="contactos"
                                     onClick={() => setChatActivo(u)}
+                                    foto={u.foto}
                                 />
                             </li>
                         ))}
                     </ul>
-                    <ul>
-                        {nombreChat.map((u, index) => (
-                            <li key={index}>
-                                <Contacto
-                                    nombre={u.nombre}
-                                    color="contactos"
-                                    onClick={() => {
-                                        const chatId = u.id_chat;
-                                        setChatActivo({ ID: chatId, nombre: u.nombre });
-                                    }}
-                                />
-                            </li>
-                        ))}
-                    </ul>
+     
 
 
                 </div>
@@ -483,8 +480,16 @@ export default function ChatPage() {
                 {/* Chat principal */}
                 <section className={styles.chat}>
                     <header className={styles.chatHeader}>
-                        {chatActivo ? (
-                            <h2>⚪ {chatActivo.nombre}</h2>
+                        {(chatActivo) ? (
+                            <>
+                                {
+                                    chatActivo.foto != "" ?
+                                    <img className={styles.foto} src={chatActivo.foto}></img>
+                                    :
+                                    <img className={styles.foto} src={"https://cdn-icons-png.flaticon.com/512/847/847969.png"}></img>
+                                }
+                                <h2>{chatActivo.nombre}</h2> 
+                            </>
                         ) : (
                             <h2>Selecciona un chat</h2>
                         )}

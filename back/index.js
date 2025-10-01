@@ -159,7 +159,6 @@ app.post("/chats", async function (req, res) {
            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
            WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
            AND (Chats.es_grupo = 1 AND Chats.nombre IS NOT NULL AND Chats.nombre != "")
-           AND (Chats.es_grupo = 0 AND Chats.nombre IS NOT NULL AND Chats.nombre != "")
        `);
         res.send(resultado);
     } catch (error) {
@@ -185,6 +184,7 @@ app.post("/traerUsuarios", async function (req, res) {
             WHERE id_usuario = ${req.body.id_usuario}
             )
             AND u.ID != ${req.body.id_usuario}
+            AND (u.nombre != "" AND u.nombre IS NOT NULL)
         `);
 
         console.log("RESULTADO:", resultado);
@@ -236,7 +236,7 @@ app.post("/agregarChat", async function (req, res) {
             const usuarios = await realizarQuery(`
                 SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
             `);
-            if (usuarios.length === 0) {
+            if (usuarios.length == 0) {
                 return res.send({ ok: false, mensaje: "El mail no existe" });
             }
             const otroUsuarioId = usuarios[0].ID;
