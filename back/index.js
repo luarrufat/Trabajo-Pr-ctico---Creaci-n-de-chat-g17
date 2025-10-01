@@ -175,7 +175,7 @@ app.post("/traerUsuarios", async function (req, res) {
         console.log("BODY:", req.body);
 
         const resultado = await realizarQuery(`
-            SELECT u.ID, u.nombre, upc.id_chat
+            SELECT u.ID, u.nombre, upc.id_chat, u.foto_perfil
             FROM Usuarios u
             INNER JOIN UsuariosPorChat upc ON upc.id_usuario = u.ID
             WHERE upc.id_chat IN (
