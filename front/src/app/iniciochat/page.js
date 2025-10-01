@@ -212,153 +212,157 @@ export default function ChatPage() {
   }
 
   function eliminarUsuario() {
-    let name = document.getElementById("nombreEliminar").value;
-    let datos = {
-      nombre: name
+    const datos = {
+      id_chat: chatActivo.ID,
+      id_usuario: localStorage.getItem("ID")
     };
     borrarUsuario(datos);
   }
   async function borrarUsuario(datos) {
     try {
-      let response = await fetch("http://localhost:4000/borrarUsuario", {
+      const res = await fetch("http://localhost:4000/eliminarContacto", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(datos),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
       });
-      let result = await response.json();
+      const result = await res.json();
       console.log(result);
+
+      if (result.ok) {
+        // lo saco del estado local, así no vuelve a aparecer en UI
+        setContacts((prev) =>
+          prev.filter((c) => c.ID !== chatActivo.ID)
+        );
+        setChatActivo(null); // cierro el chat actual
+      }
     } catch (error) {
-      console.log("Error", error);
-      ui.showModal("Ocurrió un error al intentar borrar el usuario");
+      console.error("Error al eliminar contacto:", error);
     }
   }
 
+function agregarInput() {
+  setMails([...mails, ""]);
+}
 
-  function agregarInput() {
-    setMails([...mails, ""]);
-  }
+function actualizarMail(index, value) {
+  const copia = [...mails];
+  copia[index] = value;
+  setMails(copia);
+}
 
-  function actualizarMail(index, value) {
-    const copia = [...mails];
-    copia[index] = value;
-    setMails(copia);
-  }
+function toggleGrupo() {
+  setEsGrupo(!esGrupo);
+}
 
-  function toggleGrupo() {
-    setEsGrupo(!esGrupo);
-  }
+return (
+  <div className={styles.chatContainer}>
+    {/* Panel de contactos */}
+    <div className={styles.contactos}>
+      <ul>
+        {todosLosContactos.map((u, index) => (
+          <li key={`${u.id_chat ?? u.ID}-${index}`}>
+            <Contacto
+              nombre={u.nombre}
+              color="contactos"
+              onClick={() => {
+                const chatSeleccionado = { ID: u.id_chat ?? u.ID, nombre: u.nombre };
+                setChatActivo(chatSeleccionado);
+                traerMensajesChat(chatSeleccionado.ID);
+              }}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
 
-  return (
-    <div className={styles.chatContainer}>
-      {/* Panel de contactos */}
-      <div className={styles.contactos}>
-        <ul>
-          {todosLosContactos.map((u, index) => (
-            <li key={`${u.id_chat ?? u.ID}-${index}`}>
-              <Contacto
-                nombre={u.nombre}
-                color="contactos"
-                onClick={() => {
-                  const chatSeleccionado = { ID: u.id_chat ?? u.ID, nombre: u.nombre };
-                  setChatActivo(chatSeleccionado);
-                  traerMensajesChat(chatSeleccionado.ID);
-                }}
+    {/* Popup para crear chat o grupo */}
+    <Popup trigger={<BotonRedondo texto="+" />} modal>
+      <div className="popupContainer">
+        <p>{esGrupo ? "Crear un nuevo grupo" : "Crear un nuevo chat"}</p>
+        <label>
+          <Input type="checkbox" onChange={toggleGrupo} />
+          {esGrupo ? "Desea crear un chat individual?" : "Desea crear un grupo?"}
+        </label>
+
+        {esGrupo ? (
+          <>
+            <Input
+              placeholder="Nombre del grupo"
+              onChange={(e) => setNombreGrupo(e.target.value)}
+              color="registro"
+            />
+            <Input
+              placeholder="Foto (URL)"
+              onChange={(e) => setFoto(e.target.value)}
+              color="registro"
+            />
+            <Input
+              placeholder="Descripción"
+              onChange={(e) => setDescripcion(e.target.value)}
+              color="registro"
+            />
+            {mails.map((m, i) => (
+              <Input
+                key={`mail-${i}`}
+                type="text"
+                placeholder="Correo del usuario"
+                value={m}
+                onChange={(e) => actualizarMail(i, e.target.value)}
+                color="registro"
               />
-            </li>
-          ))}
-        </ul>
+            ))}
+            <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
+            <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
+          </>
+        ) : (
+          <>
+            <Input
+              placeholder="Mail del contacto"
+              onChange={(e) => setMail(e.target.value)}
+              color="registro"
+            />
+            <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
+          </>
+        )}
+      </div>
+    </Popup>
+
+    {/* Chat principal */}
+    <section className={styles.chat}>
+      <header className={styles.chatHeader}>
+        {/*{chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> && <Boton1 texto="ELiminar" color="wpp"></Boton1> : <h2>Selecciona un chat</h2>}*/}
+        {chatActivo ? (<> <h2>⚪ {chatActivo.nombre}</h2> <Boton1 texto="Eliminar" color="eliminar" onClick={eliminarUsuario} /></>) : <h2>Selecciona un chat</h2>}
+
+      </header>
+
+      {/* Lista de mensajes */}
+      <div className={styles.mensajesContainer}>
+        {mensajes.map((msg, index) => (
+          <Mensajes
+            key={`${msg.chatId}-${index}`}
+            color="mensajes"
+            lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
+            texto={msg.texto}
+          />
+        ))}
+        <div ref={mensajesEndRef} />
       </div>
 
-      {/* Popup para crear chat o grupo */}
-      <Popup trigger={<BotonRedondo texto="+" />} modal>
-        <div className="popupContainer">
-          <p>{esGrupo ? "Crear un nuevo grupo" : "Crear un nuevo chat"}</p>
-          <label>
-            <Input type="checkbox" onChange={toggleGrupo} />
-            {esGrupo ? "Desea crear un chat individual?" : "Desea crear un grupo?"}
-          </label>
-
-          {esGrupo ? (
-            <>
-              <Input
-                placeholder="Nombre del grupo"
-                onChange={(e) => setNombreGrupo(e.target.value)}
-                color="registro"
-              />
-              <Input
-                placeholder="Foto (URL)"
-                onChange={(e) => setFoto(e.target.value)}
-                color="registro"
-              />
-              <Input
-                placeholder="Descripción"
-                onChange={(e) => setDescripcion(e.target.value)}
-                color="registro"
-              />
-              {mails.map((m, i) => (
-                <Input
-                  key={`mail-${i}`}
-                  type="text"
-                  placeholder="Correo del usuario"
-                  value={m}
-                  onChange={(e) => actualizarMail(i, e.target.value)}
-                  color="registro"
-                />
-              ))}
-              <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
-              <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
-            </>
-          ) : (
-            <>
-              <Input
-                placeholder="Mail del contacto"
-                onChange={(e) => setMail(e.target.value)}
-                color="registro"
-              />
-              <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
-            </>
-          )}
-        </div>
-      </Popup>
-
-      {/* Chat principal */}
-      <section className={styles.chat}>
-        <header className={styles.chatHeader}>
-          {/*{chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> && <Boton1 texto="ELiminar" color="wpp"></Boton1> : <h2>Selecciona un chat</h2>}*/}
-          {chatActivo ? ( <> <h2>⚪ {chatActivo.nombre}</h2> <Boton1 texto="Eliminar" color="wpp" /></>) : <h2>Selecciona un chat</h2>}
-
-        </header>
-
-        {/* Lista de mensajes */}
-        <div className={styles.mensajesContainer}>
-          {mensajes.map((msg, index) => (
-            <Mensajes
-              key={`${msg.chatId}-${index}`}
-              color="mensajes"
-              lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
-              texto={msg.texto}
+      {/* Input de mensaje */}
+      {chatActivo && (
+        <footer className={styles.chatInput}>
+          <div className={styles.inputContainer}>
+            <input
+              type="text"
+              placeholder="Escribe tu mensaje..."
+              value={nuevoMensaje}
+              onChange={(e) => setNuevoMensaje(e.target.value)}
             />
-          ))}
-          <div ref={mensajesEndRef} />
-        </div>
-
-        {/* Input de mensaje */}
-        {chatActivo && (
-          <footer className={styles.chatInput}>
-            <div className={styles.inputContainer}>
-              <input
-                type="text"
-                placeholder="Escribe tu mensaje..."
-                value={nuevoMensaje}
-                onChange={(e) => setNuevoMensaje(e.target.value)}
-              />
-              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
-            </div>
-          </footer>
-        )}
-      </section>
-    </div>
-  );
+            <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
+          </div>
+        </footer>
+      )}
+    </section>
+  </div>
+);
 }

@@ -301,22 +301,18 @@ app.post('/contacto', async (req, res) => {
 });
 
 //eliminar contactos
-app.post('/borrarUsuario', async function (req, res) {
+app.post('/eliminarContacto', async function (req, res) {
     try {
-        const nombre = req.body.nombre;
+        const { id_chat, id_usuario } = req.body;
 
-        const vector = await realizarQuery(`SELECT * FROM Usuarios WHERE nombre='${nombre}'`);
+        await realizarQuery(
+            `DELETE FROM UsuariosPorChat WHERE id_chat=${id_chat} AND id_usuario=${id_usuario}`
+        );
 
-        if (vector.length > 0) {
-            await realizarQuery(`DELETE FROM Usuarios WHERE nombre='${nombre}'`);
-            res.send({ borrado: true, mensaje: "Contacto eliminado correctamente" });
-        } else {
-            res.send({ borrado: false, mensaje: "Contacto no encontrado" });
-        }
-
+        res.send({ ok: true, mensaje: "Contacto eliminado del chat" });
     } catch (error) {
         res.status(500).send({
-            borrado: false,
+            ok: false,
             mensaje: "Error en el servidor",
             error: error.message
         });
@@ -398,7 +394,7 @@ app.get('/infoUsuario', async (req, res) => {
     }
 });
 
-app.post('/encontrarMensajesChat', async (req, res) => { 
+app.post('/encontrarMensajesChat', async (req, res) => {
     const { chatSeleccionadoId } = req.body;
     console.log("Body recibido:", req.body);
 
