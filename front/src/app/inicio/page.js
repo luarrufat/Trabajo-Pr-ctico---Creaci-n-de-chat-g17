@@ -199,6 +199,7 @@ export default function InicioPage() {
               </label>
               <Input placeholder="Mail del contacto" onChange={(event) => { setMail(event.target.value) }} color="registro"/>
               <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
+
             </>
           )}
         </div>

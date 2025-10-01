@@ -7,6 +7,7 @@ import { use, useEffect, useState } from "react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import BotonRedondo from "@/componentes/BotonRedondo";
+import Mensajes from "@/componentes/Mensajes";
 
 export default function loginPage() {
     const [cuenta, setCuenta] = useState(0);
@@ -14,8 +15,8 @@ export default function loginPage() {
     const [color, setcolor] = useState("brown");
     const [nombre, setNombre] = useState("");
     const router = useRouter();
-   
-    function a(event){
+
+    function a(event) {
         setBool(event.target.checked)
     }
     function checkeado() {
@@ -25,26 +26,26 @@ export default function loginPage() {
         } else {
             restar()
             setcolor("brown")
-        } 
+        }
     }
-    function saludo(event){
+    function saludo(event) {
         setNombre(event.target.value);
     }
     function sumar() {
         setCuenta(cuenta + 1);
     }
-    function restar(){
+    function restar() {
         setCuenta(cuenta - 1);
     }
-    function ver(event){
+    function ver(event) {
         console.log(event.target.checked)
         return (event.target.checked)
     }
-    useEffect(()=>{
-        if (cuenta>20) {
+    useEffect(() => {
+        if (cuenta > 20) {
             setCuenta(0)
         }
-        if (cuenta<-20) {
+        if (cuenta < -20) {
             router.push("/login")
         }
     }, [cuenta])
@@ -57,9 +58,14 @@ export default function loginPage() {
             <br></br>
             <Input type={"text"} respuesta={saludo}></Input>
             {nombre != "" && <h2>Soy:{nombre}</h2>}
-            {nombre == "mati" ? <h2> Sos pro {nombre}</h2>:<h2>Escribí mati</h2>}
+            {nombre == "mati" ? <h2> Sos pro {nombre}</h2> : <h2>Escribí mati</h2>}
+            <Mensajes lado="mensajeotro" texto="Holaaaaaa" hora="10:45" />
+            <Mensajes lado="mensajeyo" texto="¿Cómo estás?" hora="10:46" />
 
-            
+
+
+
+
         </>
     )
 }
