@@ -24,7 +24,7 @@ export default function LoginPage() {
       console.log(result)
 
       if (result.res === "ok") {
-        router.replace("/inicio")
+        router.replace("/iniciochat")
       }
     } catch (error) {
       console.log("Error", error)

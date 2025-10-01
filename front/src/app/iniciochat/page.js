@@ -248,16 +248,27 @@ export default function ChatPage() {
             id_usuario: localStorage.getItem("ID"), // usuario logueado
         };
 
-        const response = await fetch("http://localhost:4000/agregarChat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos),
-        });
+        try {
+            const response = await fetch("http://localhost:4000/agregarChat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos),
+            });
 
-        const result = await response.json();
-        if (result.ok == true) {
-            traerChats()
+            const result = await response.json();
+            console.log(result);
 
+            if (result.ok) {
+                if (result.yaExiste) {
+                    alert("Ya tenés un chat con este usuario");
+                } else {
+                    traerChats(); 
+                }
+            } else {
+                alert(result.mensaje || "Error al crear chat");
+            }
+        } catch (err) {
+            console.error("Error al crear chat individual:", err);
         }
     }
 

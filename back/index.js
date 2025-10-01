@@ -179,9 +179,9 @@ app.post("/traerUsuarios", async function (req, res) {
             FROM Usuarios u
             INNER JOIN UsuariosPorChat upc ON upc.id_usuario = u.ID
             WHERE upc.id_chat IN (
-                SELECT id_chat
-                FROM UsuariosPorChat
-                WHERE id_usuario = ${req.body.id_usuario}
+            SELECT id_chat
+            FROM UsuariosPorChat
+            WHERE id_usuario = ${req.body.id_usuario}
             )
             AND u.ID != ${req.body.id_usuario}
         `);
@@ -232,27 +232,36 @@ app.post("/agregarChat", async function (req, res) {
             }
 
         } else {
-            // Insertar chat individual (campos vacíos salvo es_grupo = 0)
-            const resultado = await realizarQuery(`
-        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
-        VALUES (0, NULL, NULL, NULL)
-      `);
-            chatId = resultado.insertId;
-
-            // obtener id del otro usuario por mail
             const usuarios = await realizarQuery(`
-        SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
-      `);
+                SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
+            `);
+            if (usuarios.length === 0) {
+                return res.send({ ok: false, mensaje: "El mail no existe" });
+            }
             const otroUsuarioId = usuarios[0].ID;
 
-            // vincular usuarios al chat
-            await realizarQuery(`
+            const existe = await realizarQuery(`
+            SELECT c.ID
+            FROM Chats c
+            INNER JOIN UsuariosPorChat u1 ON u1.id_chat = c.ID AND u1.id_usuario = ${req.body.id_usuario}
+            INNER JOIN UsuariosPorChat u2 ON u2.id_chat = c.ID AND u2.id_usuario = ${otroUsuarioId}
+            WHERE c.es_grupo = 0
+            `);
+
+            if (existe.length > 0) {
+                // ya hay chat, devolvemos su id
+                return res.send({ ok: true, id_chat: existe[0].ID, yaExiste: true });
+            } else {
+                // vincular usuarios al chat
+                await realizarQuery(`
         INSERT INTO UsuariosPorChat (id_chat, id_usuario)
         VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
       `);
+            }
+
+            res.send({ ok: true, id_chat: chatId });
         }
 
-        res.send({ ok: true, id_chat: chatId });
     } catch (error) {
         res.status(500).send({
             ok: false,
