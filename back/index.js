@@ -373,3 +373,22 @@ app.get('/infoUsuario', async (req, res) => {
         res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
     }
 });
+
+app.post('/encontrarMensajesChat', async (req, res) => { 
+    const { chatSeleccionadoId } = req.body;
+    console.log("Body recibido:", req.body);
+
+    try {
+        const respuesta = await realizarQuery(`
+            SELECT * 
+            FROM Mensajes
+            WHERE id_chat = ${chatSeleccionadoId}
+            ORDER BY fecha_hora ASC
+        `);
+
+        res.json({ ok: true, mensajes: respuesta });
+    } catch (error) {
+        console.error("Error al traer mensajes:", error);
+        res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
+});

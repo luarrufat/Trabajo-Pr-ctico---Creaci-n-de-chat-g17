@@ -1,9 +1,11 @@
+/* Header */
 .header {
     background-color: #6f82ee;
     color: white;
     padding: 20px;
 }
 
+/* Contenedor principal del chat */
 .chatContainer {
     display: grid;
     grid-template-columns: 287px 1fr;
@@ -21,6 +23,12 @@
     overflow-y: auto;
 }
 
+.contactos ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
 .buscador {
     padding: 8px;
     border-radius: 6px;
@@ -34,8 +42,10 @@
     display: flex;
     flex-direction: column;
     background: white;
+    height: 100%; /* ocupa todo el espacio disponible */
 }
 
+/* Header del chat */
 .chatHeader {
     background-color: #a8b4f8;
     color: white;
@@ -44,15 +54,16 @@
     border-bottom: 1px solid #ccc;
 }
 
+/* Contenedor de mensajes */
 .mensajesContainer {
-    /*
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background-color: #fffaf2;*/
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: flex-end;
+    overflow-y: auto;
+    flex: 1; /* ocupa todo el espacio restante */
+    padding: 10px;
+    gap: 10px;
+    background-color: white;
 }
 
 /* Input de mensaje */
@@ -62,16 +73,56 @@
     border-top: 1px solid #ccc;
     background-color: #f9f9f9;
     gap: 10px;
-    position: absolute;
-    bottom: 0;
-    width: 85%;
+    width: 100%;
+    box-sizing: border-box;
+    width: 100%;
 }
+.inputContainer{
+    width: 100%;
 
+}
 .chatInput input {
     flex: 1;
-    padding: 10px;
+    padding: 12px 15px;
+    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 8px;
     outline: none;
+    margin-right: 10px;
+    width: 90%;
 }
 
+/* Botones y otros inputs */
+.boton {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Popup */
+.popupContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+}
+
+/* Mensajes */
+.mensajeyo {
+    align-self: flex-end;
+    background-color: #d1fdd3;
+    padding: 10px 15px;
+    border-radius: 15px 15px 0 15px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.mensajeotro {
+    align-self: flex-start;
+    background-color: #f1f1f1;
+    padding: 10px 15px;
+    border-radius: 15px 15px 15px 0;
+    max-width: 70%;
+    word-wrap: break-word;
+}
