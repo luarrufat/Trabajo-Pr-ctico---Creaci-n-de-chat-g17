@@ -154,12 +154,12 @@ app.post("/chats", async function (req, res) {
     try {
         console.log(req.body)
         const resultado = await realizarQuery(`
-            SELECT Chats.ID , Chats.nombre, Chats.foto
-            FROM Chats
-            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
-            WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
-
-        `);
+           SELECT Chats.ID , Chats.nombre, Chats.foto
+           FROM Chats
+           INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
+           WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
+           AND (Chats.es_grupo = 0 OR (Chats.es_grupo = 1 AND Chats.nombre IS NOT NULL AND Chats.nombre != ''))
+       `);
         res.send(resultado);
     } catch (error) {
         res.send({
