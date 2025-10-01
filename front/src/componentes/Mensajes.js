@@ -17,3 +17,9 @@ export default function Mensajes({ lado, texto, hora }) {
         </div>
     );
 }
+
+/*  ASI SE PRUEBA:
+            <Mensajes lado="mensajeotro" texto="Holaaaaaa" hora="10:45" />
+            <Mensajes lado="mensajeyo" texto="¿Cómo estás?" hora="10:46" />
+
+*/
