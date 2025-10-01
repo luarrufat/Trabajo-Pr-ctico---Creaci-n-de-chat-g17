@@ -267,7 +267,7 @@ app.post("/agregarChat", async function (req, res) {
     }
 });
 
-//CORREGIR
+//traer contactos
 app.post('/contacto', async (req, res) => {
     try {
         const contactos = await realizarQuery(`
@@ -299,6 +299,30 @@ app.post('/contacto', async (req, res) => {
         });
     }
 });
+
+//eliminar contactos
+app.post('/borrarUsuario', async function (req, res) {
+    try {
+        const nombre = req.body.nombre;
+
+        const vector = await realizarQuery(`SELECT * FROM Usuarios WHERE nombre='${nombre}'`);
+
+        if (vector.length > 0) {
+            await realizarQuery(`DELETE FROM Usuarios WHERE nombre='${nombre}'`);
+            res.send({ borrado: true, mensaje: "Contacto eliminado correctamente" });
+        } else {
+            res.send({ borrado: false, mensaje: "Contacto no encontrado" });
+        }
+
+    } catch (error) {
+        res.status(500).send({
+            borrado: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
+
 
 /* ACA ARRANCA LO DEL SOCKET */
 io.on("connection", (socket) => {

@@ -211,6 +211,31 @@ export default function ChatPage() {
     }
   }
 
+  function eliminarUsuario() {
+    let name = document.getElementById("nombreEliminar").value;
+    let datos = {
+      nombre: name
+    };
+    borrarUsuario(datos);
+  }
+  async function borrarUsuario(datos) {
+    try {
+      let response = await fetch("http://localhost:4000/borrarUsuario", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(datos),
+      });
+      let result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.log("Error", error);
+      ui.showModal("Ocurrió un error al intentar borrar el usuario");
+    }
+  }
+
+
   function agregarInput() {
     setMails([...mails, ""]);
   }
@@ -301,7 +326,9 @@ export default function ChatPage() {
       {/* Chat principal */}
       <section className={styles.chat}>
         <header className={styles.chatHeader}>
-          {chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> : <h2>Selecciona un chat</h2>}
+          {/*{chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> && <Boton1 texto="ELiminar" color="wpp"></Boton1> : <h2>Selecciona un chat</h2>}*/}
+          {chatActivo ? ( <> <h2>⚪ {chatActivo.nombre}</h2> <Boton1 texto="Eliminar" color="wpp" /></>) : <h2>Selecciona un chat</h2>}
+
         </header>
 
         {/* Lista de mensajes */}
@@ -327,7 +354,7 @@ export default function ChatPage() {
                 value={nuevoMensaje}
                 onChange={(e) => setNuevoMensaje(e.target.value)}
               />
-              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom}/>
+              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
             </div>
           </footer>
         )}
