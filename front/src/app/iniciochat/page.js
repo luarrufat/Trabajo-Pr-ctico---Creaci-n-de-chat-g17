@@ -94,7 +94,6 @@ export default function ChatPage() {
                 });
 
                 let data = await res.json();
-                console.log("📩 traerUsuarios ->", data);
 
                 for (let i = 0; i < data.length; i++) {
                     for (let j = 0; j < data.length; j++) {
@@ -176,7 +175,6 @@ export default function ChatPage() {
 
     }
 
-    //LUCIA CHAT
     useEffect(() => {
         async function contacto() {
             const datos = await obtenerNombre();
@@ -216,7 +214,6 @@ export default function ChatPage() {
                 body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
             });
             const data = await response.json();
-            console.log("traerUsuarios ->", data);
             if (data.ok && data.usuarios) setNombreChat(data.usuarios);
             else setNombreChat([]);
         } catch (error) {
@@ -231,27 +228,43 @@ export default function ChatPage() {
     }
 
     async function crearGrupo() {
+        let mailsLimpios = validacionGrupo();
+        
         const datos = {
             es_grupo: 1,
-            nombre: document.getElementById("nombreGrupo").value,
-            foto: document.getElementById("fotoGrupo").value,
-            descripcion_grupo: document.getElementById("descripcionGrupo").value,
+            nombre,
+            foto,
+            descripcion_grupo: descripcion,
             id_usuario: localStorage.getItem("ID"), // usuario logueado
+            mails: mailsLimpios
         };
 
-        const response = await fetch("http://localhost:4000/agregarChat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos),
-        });
+        console.log("Datos del grupo:", datos);
 
-        const result = await response.json();
-        console.log(result);
+        if (nombre.trim() == "") {
+            alert("Por favor, complete el nombre del grupo.");
+        } else if (mailsLimpios.length > 0) {
+            const response = await fetch("http://localhost:4000/agregarChat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos),
+            });
+    
+            const result = await response.json();
+            console.log(result);
+        } else {
+            alert("Por favor, agregue al menos un usuario al grupo.");
+        }
+
     }
 
     async function crearChatIndividual() {
-        if (!mail.trim()) return;
-        const datos = { es_grupo: 0, mail, id_usuario: localStorage.getItem("ID") };
+        const datos = {
+            es_grupo: 0,
+            mail: mail,
+            id_usuario: localStorage.getItem("ID"), // usuario logueado
+        };
+
         try {
             const response = await fetch("http://localhost:4000/agregarChat", {
                 method: "POST",
@@ -309,7 +322,7 @@ export default function ChatPage() {
         setMails(copia);
     }
 
-    async function crearGrupo() {
+    function validacionGrupo() {
         // limpiar mails con un for
         let mailsLimpios = [];
         for (let i = 0; i < mails.length; i++) {
@@ -327,18 +340,7 @@ export default function ChatPage() {
             mails: mailsLimpios,
         };
 
-        try {
-            const response = await fetch("http://localhost:4000/agregarChat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datos),
-            });
-
-            const result = await response.json();
-            console.log(result);
-        } catch (error) {
-            console.error("Error al crear grupo:", error);
-        }
+        return mailsLimpios;
     }
 
     {/*SUBIR MENSAJES A BBDD*/ }
@@ -411,11 +413,11 @@ export default function ChatPage() {
                     className={styles.buscador}
                     id="buscar"
                     />*/}
-                    <Title texto="Chats" color="registro" />
+                    <Title texto="Chats" color="registro"/>
                     <Input placeholder="Buscar" id="buscar" color="registro" />
                     <ul>
-                        {todosLosContactos.map((u) => (
-                            <li key={u.ID + u.nombre}>
+                        {todosLosContactos.map((u,i) => (
+                            <li key={i}>
                                 <Contacto
                                     nombre={u.nombre}
                                     color="contactos"

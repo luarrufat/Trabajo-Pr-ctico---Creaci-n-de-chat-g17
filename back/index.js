@@ -204,26 +204,27 @@ app.post("/agregarChat", async function (req, res) {
         let chatId;
 
         if (req.body.es_grupo == 1) {
+
             // Insertar el grupo
             const resultado = await realizarQuery(`
-        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
-        VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
-      `);
+                INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
+                VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
+            `);
 
             chatId = resultado.insertId;
 
             // Insertar al creador del grupo
             await realizarQuery(`
-        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
-        VALUES (${chatId}, ${req.body.id_usuario})
-      `);
+            INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+            VALUES (${chatId}, ${req.body.id_usuario})
+            `);
 
             // Insertar a los demás usuarios por mail
             for (const mail of req.body.mails) {
                 const usuarios = await realizarQuery(`
           SELECT ID FROM Usuarios WHERE usuario_mail = '${mail}'
         `);
-                if (usuarios.length > 0) {
+                if (usuarios.length > 0 && usuarios[0].ID != req.body.id_usuario) {
                     const userId = usuarios[0].ID;
                     await realizarQuery(`
             INSERT INTO UsuariosPorChat (id_chat, id_usuario)
@@ -231,6 +232,8 @@ app.post("/agregarChat", async function (req, res) {
           `);
                 }
             }
+
+            console.log(chatId)
 
         } else {
             // Insertar chat individual (campos vacíos salvo es_grupo = 0)
@@ -251,6 +254,11 @@ app.post("/agregarChat", async function (req, res) {
         INSERT INTO UsuariosPorChat (id_chat, id_usuario)
         VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
       `);
+
+
+            }
+            console.log(chatId)
+
         }
 
         res.send({ ok: true, id_chat: chatId });
