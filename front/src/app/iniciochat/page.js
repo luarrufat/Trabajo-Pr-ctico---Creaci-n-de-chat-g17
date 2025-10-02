@@ -250,33 +250,18 @@ export default function ChatPage() {
     }
 
     async function crearChatIndividual() {
-        const datos = {
-            es_grupo: 0,
-            mail: mail,
-            id_usuario: localStorage.getItem("ID"), // usuario logueado
-        };
-
+        if (!mail.trim()) return;
+        const datos = { es_grupo: 0, mail, id_usuario: localStorage.getItem("ID") };
         try {
             const response = await fetch("http://localhost:4000/agregarChat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datos),
             });
-
             const result = await response.json();
-            console.log(result);
-
-            if (result.ok) {
-                if (result.yaExiste) {
-                    alert("Ya tenés un chat con este usuario");
-                } else {
-                    traerChats(); 
-                }
-            } else {
-                alert(result.mensaje || "Error al crear chat");
-            }
-        } catch (err) {
-            console.error("Error al crear chat individual:", err);
+            if (result.ok) traerChats();
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -426,7 +411,7 @@ export default function ChatPage() {
                     className={styles.buscador}
                     id="buscar"
                     />*/}
-                    <Title texto="Chats" color="registro"/>
+                    <Title texto="Chats" color="registro" />
                     <Input placeholder="Buscar" id="buscar" color="registro" />
                     <ul>
                         {todosLosContactos.map((u) => (
@@ -440,7 +425,7 @@ export default function ChatPage() {
                             </li>
                         ))}
                     </ul>
-     
+
 
 
                 </div>
@@ -484,11 +469,11 @@ export default function ChatPage() {
                             <>
                                 {
                                     chatActivo.foto != "" ?
-                                    <img className={styles.foto} src={chatActivo.foto}></img>
-                                    :
-                                    <img className={styles.foto} src={"https://cdn-icons-png.flaticon.com/512/847/847969.png"}></img>
+                                        <img className={styles.foto} src={chatActivo.foto}></img>
+                                        :
+                                        <img className={styles.foto} src={"https://cdn-icons-png.flaticon.com/512/847/847969.png"}></img>
                                 }
-                                <h2>{chatActivo.nombre}</h2> 
+                                <h2>{chatActivo.nombre}</h2>
                             </>
                         ) : (
                             <h2>Selecciona un chat</h2>
