@@ -33,6 +33,14 @@ export default function LoginPage() {
 
   function obtenerDatosRegistro() {
     let datos = { nombre, password: contraseña, usuario_mail: usuarioMail }
+
+    if (nombre == "" || contraseña == "" || usuarioMail == "") {
+      alert("Por favor complete todos los campos")
+      return
+    } else if (!usuarioMail.includes("@")) {
+      alert("Por favor ingrese un mail válido")
+      return
+    } else  {
     agregarUsuarioRegistro(datos)
   }
 
@@ -96,4 +104,5 @@ export default function LoginPage() {
       </div>
     </>
   )
+}
 }
