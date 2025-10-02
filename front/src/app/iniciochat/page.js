@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import clsx from "clsx";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./page.module.css";
 import Boton1 from "@/componentes/Boton1";
 import Contacto from "@/componentes/Contactos";
 import Mensajes from "@/componentes/Mensajes";
 import { useSocket } from "@/hooks/useSocket";
-import Title from "@/componentes/Title"
-import Input from "@/componentes/Input"
-import BotonRedondo from "@/componentes/BotonRedondo"
-import Popup from 'reactjs-popup';
-import 'reactjs-popup/dist/index.css';
+import Input from "@/componentes/Input";
+import BotonRedondo from "@/componentes/BotonRedondo";
+import Popup from "reactjs-popup";
+import "reactjs-popup/dist/index.css";
 
 export default function ChatPage() {
     const [nombre, setNombre] = useState("");
@@ -123,56 +121,96 @@ export default function ChatPage() {
 
         }
         setNuevoMensaje("");
+  const { socket } = useSocket();
+  const [chatActivo, setChatActivo] = useState(null);
+  const [mensajes, setMensajes] = useState([]);
+  const [nuevoMensaje, setNuevoMensaje] = useState("");
+  const [contacts, setContacts] = useState([]);
+  const [nombreChat, setNombreChat] = useState([]);
+  const [mail, setMail] = useState("");
+  const [mails, setMails] = useState(["", ""]);
+  const [esGrupo, setEsGrupo] = useState(false);
+  const [nombreGrupo, setNombreGrupo] = useState("");
+  const [foto, setFoto] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const mensajesEndRef = useRef(null);
+  const [nombreAutor, setNombreAutor] = useState([]);
+
+  const todosLosContactos = [...contacts, ...nombreChat];
+
+  // SOCKET: recibir mensajes
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (data) => {
+      if (
+        chatActivo &&
+        data.room === chatActivo.ID &&
+        data.message &&
+        data.message.texto?.trim()
+      ) {
+        setMensajes((actual) => [
+          ...actual,
+          {
+            texto: data.message.texto,
+            autor: data.message.autor ?? "otro",
+            chatId: data.room,
+            nombre: data.message.nombre,
+          },
+        ]);
+      }
+    };
+
+    socket.on("newMessage", handleNewMessage);
+    return () => socket.off("newMessage", handleNewMessage);
+  }, [socket, chatActivo]);
+
+  // Unirse a room cuando chatActivo cambie
+  useEffect(() => {
+    if (!chatActivo || !socket) return;
+    socket.emit("joinRoom", { room: chatActivo.ID });
+  }, [chatActivo, socket]);
+
+  // Traer chats y usuarios al inicio
+  useEffect(() => {
+    traerChats();
+    traerNombres();
+    cargarUsuarios();
+  }, []);
+
+  // Scroll automático al último mensaje
+  useEffect(() => {
+    if (mensajesEndRef.current) {
+      mensajesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-    /*
-    function enviarMensajeRoom() {
-    if (!nuevoMensaje.trim() || !chatActivo) return;
-    setUltimoMensaje(nuevoMensaje);
-    
-    if (socket) {
-        socket.emit("sendMessage", { room: chatActivo.ID, message: nuevoMensaje });
-        guardarMensajes();
+  }, [mensajes]);
+
+  async function traerChats() {
+    try {
+      const response = await fetch("http://localhost:4000/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
+      });
+      const data = await response.json();
+      setContacts(data);
+    } catch (error) {
+      console.error("Error al traer chats:", error);
     }
-    
-    setNuevoMensaje("");
-    }
-    */
+  }
 
-    function enviarMensajeRoom() {
-        if (!nuevoMensaje.trim() || !chatActivo) return;
-
-        const mensaje = {
-            texto: nuevoMensaje,
-            autor: localStorage.getItem("ID"),
-            chatId: chatActivo.ID,
-        };
-
-        setMensajes([...mensajes, mensaje]);
-
-        if (socket) {
-            socket.emit("sendMessage", {
-                room: chatActivo.ID,
-                message: mensaje,
-            });
-            guardarMensajes();
-        }
-
-        setNuevoMensaje("");
-    }
-
-    async function obtenerNombre() {
-        try {
-            const response = await fetch("http://localhost:4000/contacto", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_usuario: localStorage.getItem("ID") })
-            });
-            return await response.json();
-        } catch (err) {
-            console.error("Error al obtener nombre:", err);
-            return { ok: false };
-        }
-
+  async function traerNombres() {
+    try {
+      const response = await fetch("http://localhost:4000/traerUsuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
+      });
+      const data = await response.json();
+      setNombreChat(data.usuarios ?? []);
+    } catch (error) {
+      console.error("Error al traer nombres:", error);
+      setNombreChat([]);
     }
 
     useEffect(() => {
@@ -220,12 +258,46 @@ export default function ChatPage() {
             console.error("Error al traer nombres:", error);
             setNombreChat([]);
         }
+  }
+
+  async function cargarUsuarios() {
+    try {
+      const res = await fetch("http://localhost:4000/traerUsuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
+      });
+      const data = await res.json();
+      setNombreChat(data ?? []);
+    } catch (err) {
+      console.error("Error cargarUsuarios:", err);
     }
+  }
+
+  async function traerMensajesChat(chatId) {
+    try {
+      const response = await fetch("http://localhost:4000/encontrarMensajesChat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatSeleccionadoId: chatId }),
+      });
+      const data = await response.json();
+      if (data.ok) {
+        const mensajesFormateados = data.mensajes.map((m) => ({
+          texto: m.contenido ?? "",
+          autor: m.id_usuario.toString(),
+          nombre: m.nombre,   
+          chatId: m.id_chat,
+        }));
+        setMensajes(mensajesFormateados);
+        setNombreAutor(mensajesFormateados.nombre)
+      }
+    } catch (error) {
+      console.error("Error al traer mensajes del chat:", error);
+    }
+  }
 
 
-    function handleCheckbox(event) {
-        setEsGrupo(event.target.checked);
-    }
 
     async function crearGrupo() {
         let mailsLimpios = validacionGrupo();
@@ -341,65 +413,106 @@ export default function ChatPage() {
         };
 
         return mailsLimpios;
+  // Enviar mensaje
+  function enviarMensajeRoom() {
+    if (!nuevoMensaje.trim() || !chatActivo || !socket) return;
+
+    const mensaje = {
+      texto: nuevoMensaje,
+      autor: localStorage.getItem("ID"),
+      chatId: chatActivo.ID,
+      nombre: nombreAutor,
+    };
+
+    socket.emit("sendMessage", { room: chatActivo.ID, message: mensaje });
+    guardarMensajeEnBBDD(mensaje);
+    setNuevoMensaje("");
+  }
+
+  async function guardarMensajeEnBBDD(mensaje) {
+    try {
+      const datos = {
+        contenido: mensaje.texto,
+        fecha_hora: new Date().toISOString().slice(0, 19).replace("T", " "),
+        id_usuario: mensaje.autor,
+        id_chat: mensaje.chatId,
+      };
+      await fetch("http://localhost:4000/mensajes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      });
+    } catch (error) {
+      console.error("Error al guardar mensaje:", error);
     }
+  }
 
-    {/*SUBIR MENSAJES A BBDD*/ }
-
-    async function obtenerIdUsuario() {
-        try {
-            const response = await fetch("http://localhost:4000/infoUsuario", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
-            return await response.json();
-        } catch (err) {
-            console.error("Error al obtener id:", err);
-            return { ok: false };
-        }
+  // --- Crear chats / grupos ---
+  async function crearChatIndividual() {
+    if (!mail.trim()) return;
+    const datos = { es_grupo: 0, mail, id_usuario: localStorage.getItem("ID") };
+    try {
+      const response = await fetch("http://localhost:4000/agregarChat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      });
+      const result = await response.json();
+      if (result.ok) traerChats();
+    } catch (error) {
+      console.error(error);
     }
+  }
 
-    async function agregarMensajes(datos) {
-        try {
-            const response = await fetch("http://localhost:4000/mensajes", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datos),
-            })
-            const result = await response.json()
-            console.log(result)
-
-            if (result.res === "ok") {
-
-            }
-        } catch (error) {
-            console.log("Error", error)
-        }
+  async function crearGrupo() {
+    const mailsLimpios = mails.filter((m) => m.trim() !== "");
+    const datos = {
+      es_grupo: 1,
+      nombre: nombreGrupo,
+      foto,
+      descripcion_grupo: descripcion,
+      id_usuario: localStorage.getItem("ID"),
+      mails: mailsLimpios,
+    };
+    try {
+      const response = await fetch("http://localhost:4000/agregarChat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      });
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.error("Error al crear grupo:", error);
     }
+  }
 
-    async function guardarMensajes() {
-        try {
-            const usuarioResp = localStorage.getItem('ID');
-            setIdChatU(chatActivo.ID);
-            console.log("EL ID USUARIO ES: ", usuarioResp)
-            if (!usuarioResp) {
-                console.error("Error: no se pudo obtener usuario o chat");
-                return;
-            }
-            const idChat = chatActivo.ID;
-            console.log("id del usuario: ", usuarioResp)
-            console.log("id del chat: ", idChat)
-            const datos = {
-                contenido: nuevoMensaje,
-                fecha_hora: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                id_usuario: usuarioResp,
-                id_chat: idChat,
-            };
+  function eliminarUsuario() {
+    const datos = {
+      id_chat: chatActivo.ID,
+      id_usuario: localStorage.getItem("ID")
+    };
+    borrarUsuario(datos);
+  }
+  async function borrarUsuario(datos) {
+    try {
+      const res = await fetch("http://localhost:4000/eliminarContacto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+      });
+      const result = await res.json();
+      console.log(result);
 
-            console.log("Datos a enviar:", datos);
-            await agregarMensajes(datos);
-        } catch (error) {
-            console.error("Error al guardar mensaje:", error);
-        }
+      if (result.ok) {
+        // lo saco del estado local, así no vuelve a aparecer en UI
+        setContacts((prev) =>
+          prev.filter((c) => c.ID !== chatActivo.ID)
+        );
+        setChatActivo(null); // cierro el chat actual
+      }
+    } catch (error) {
+      console.error("Error al eliminar contacto:", error);
     }
 
     return (
@@ -511,8 +624,35 @@ export default function ChatPage() {
                         </footer>
                     )}
                 </section>
-            </div>
-        </>
+  }
 
-    );
-}
+{/*  {/* Lista de mensajes */}
+        <div className={styles.mensajesContainer}>
+          {mensajes.map((msg, index) => (
+            <Mensajes
+              key={index}
+              lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
+              texto={msg.texto}
+              nombre={msg.nombre}
+              hora={msg.hora}
+            />
+          ))}
+          <div ref={mensajesEndRef} />
+        </div>
+
+        {/* Input de mensaje */}
+        {chatActivo && (
+          <footer className={styles.chatInput}>
+            <div className={styles.inputContainer}>
+              <input
+                type="text"
+                placeholder="Escribe tu mensaje..."
+                value={nuevoMensaje}
+                onChange={(e) => setNuevoMensaje(e.target.value)}
+              />
+              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
+            </div>
+          </footer>
+        )}
+      </section>
+    </div> */}

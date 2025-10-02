@@ -69,10 +69,15 @@ io.on("connection", (socket) => {
         console.log("PING ALL: ", data);
         io.emit('pingAll', { event: "Ping to all", message: data });
     });
-
-    socket.on('sendMessage', data => {
-        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+    /*
+        socket.on('sendMessage', data => {
+            io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+        });*/
+    socket.on('sendMessage', ({ room, message }) => {
+        io.to(room).emit('newMessage', { room, message });
     });
+
+
 
     socket.on('disconnect', () => {
         console.log("Disconnect");
@@ -273,7 +278,7 @@ app.post("/agregarChat", async function (req, res) {
     }
 });
 
-//CORREGIR
+//traer contactos
 app.post('/contacto', async (req, res) => {
     try {
         const contactos = await realizarQuery(`
@@ -305,6 +310,26 @@ app.post('/contacto', async (req, res) => {
         });
     }
 });
+
+//eliminar contactos
+app.post('/eliminarContacto', async function (req, res) {
+    try {
+        const { id_chat, id_usuario } = req.body;
+
+        await realizarQuery(
+            `DELETE FROM UsuariosPorChat WHERE id_chat=${id_chat} AND id_usuario=${id_usuario}`
+        );
+
+        res.send({ ok: true, mensaje: "Contacto eliminado del chat" });
+    } catch (error) {
+        res.status(500).send({
+            ok: false,
+            mensaje: "Error en el servidor",
+            error: error.message
+        });
+    }
+});
+
 
 /* ACA ARRANCA LO DEL SOCKET */
 io.on("connection", (socket) => {
@@ -376,6 +401,26 @@ app.get('/infoUsuario', async (req, res) => {
             usuario: usuario[0],
         });
     } catch (error) {
+        res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
+    }
+});
+
+app.post('/encontrarMensajesChat', async (req, res) => {
+    const { chatSeleccionadoId } = req.body;
+    console.log("Body recibido:", req.body);
+
+    try {
+        const respuesta = await realizarQuery(`
+            SELECT Mensajes.id_chat, Mensajes.id_usuario, Mensajes.contenido, Mensajes.fecha_hora, Usuarios.nombre
+            FROM Mensajes
+            INNER JOIN Usuarios ON Usuarios.ID = Mensajes.id_usuario
+            WHERE Mensajes.id_chat = "${chatSeleccionadoId}"
+            ORDER BY Mensajes.fecha_hora ASC
+        `);
+
+        res.json({ ok: true, mensajes: respuesta });
+    } catch (error) {
+        console.error("Error al traer mensajes:", error);
         res.status(500).send({ ok: false, mensaje: "Error en el servidor", error: error.message });
     }
 });

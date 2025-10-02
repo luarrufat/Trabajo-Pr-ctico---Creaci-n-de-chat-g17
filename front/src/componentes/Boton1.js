@@ -6,7 +6,8 @@ export default function Boton1(props) {
         <button onClick={props.onClick} type={props.type}  className={
             clsx(
                 {
-                    [styles.wpp]: props.color == "wpp",  
+                    [styles.wpp]: props.color == "wpp", 
+                    [styles.eliminar]: props.color == "eliminar", 
                 }
             )
         }>{props.texto}</button>
