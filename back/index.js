@@ -400,10 +400,11 @@ app.post('/encontrarMensajesChat', async (req, res) => {
 
     try {
         const respuesta = await realizarQuery(`
-            SELECT * 
+            SELECT Mensajes.id_chat, Mensajes.id_usuario, Mensajes.contenido, Mensajes.fecha_hora, Usuarios.nombre
             FROM Mensajes
-            WHERE id_chat = ${chatSeleccionadoId}
-            ORDER BY fecha_hora ASC
+            INNER JOIN Usuarios ON Usuarios.ID = Mensajes.id_usuario
+            WHERE Mensajes.id_chat = "${chatSeleccionadoId}"
+            ORDER BY Mensajes.fecha_hora ASC
         `);
 
         res.json({ ok: true, mensajes: respuesta });
