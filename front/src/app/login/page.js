@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [nombre, setNombre] = useState("")
   const [contraseña, setContraseña] = useState("")
   const [usuarioMail, setUsuarioMail] = useState("")
+  const [foto, setFoto] = useState("")
   const router = useRouter()
 
   async function agregarUsuarioRegistro(datos) {
@@ -24,7 +25,7 @@ export default function LoginPage() {
       console.log(result)
 
       if (result.res === "ok") {
-        router.replace("/inicio")
+        router.replace("/iniciochat")
       }
     } catch (error) {
       console.log("Error", error)
@@ -32,7 +33,7 @@ export default function LoginPage() {
   }
 
   function obtenerDatosRegistro() {
-    let datos = { nombre, password: contraseña, usuario_mail: usuarioMail }
+    let datos = { nombre, password: contraseña, usuario_mail: usuarioMail, foto }
     agregarUsuarioRegistro(datos)
   }
 
@@ -91,9 +92,12 @@ export default function LoginPage() {
           <br /><br />
           <Input color={"registro"} type={"text"} placeholder={"Ingrese su nombre"} id={"nombre"} onChange={(event) => setNombre(event.target.value)}></Input>
           <br /><br />
+          <Input color={"registro"} type={"text"} placeholder={"Ingrese su foto (URL)"} id={"foto"} onChange={(event) => setFoto(event.target.value)}></Input>
+          <br /><br />
           <Boton1 type={"text"} texto={"Enviar"} color={"wpp"} onClick={obtenerDatosRegistro}>Enviar</Boton1>
         </div>
       </div>
     </>
   )
+}
 }

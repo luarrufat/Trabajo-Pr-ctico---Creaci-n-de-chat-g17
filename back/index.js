@@ -138,7 +138,7 @@ app.post('/registro', async function (req, res) {
         if (vector.length == 0) {
             realizarQuery(`
                 INSERT INTO Usuarios (usuario_mail, password, nombre, foto_perfil) VALUES
-                    ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','');
+                    ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','${req.body.foto}');
             `)
 
         } else {
@@ -159,12 +159,12 @@ app.post("/chats", async function (req, res) {
     try {
         console.log(req.body)
         const resultado = await realizarQuery(`
-            SELECT Chats.ID , Chats.nombre, Chats.foto
-            FROM Chats
-            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
-            WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
-
-        `);
+           SELECT Chats.ID , Chats.nombre, Chats.foto
+           FROM Chats
+           INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
+           WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
+           AND (Chats.es_grupo = 1 AND Chats.nombre IS NOT NULL AND Chats.nombre != "")
+       `);
         res.send(resultado);
     } catch (error) {
         res.send({
@@ -180,15 +180,16 @@ app.post("/traerUsuarios", async function (req, res) {
         console.log("BODY:", req.body);
 
         const resultado = await realizarQuery(`
-            SELECT u.ID, u.nombre, upc.id_chat
+            SELECT u.ID, u.nombre, upc.id_chat, u.foto_perfil
             FROM Usuarios u
             INNER JOIN UsuariosPorChat upc ON upc.id_usuario = u.ID
             WHERE upc.id_chat IN (
-                SELECT id_chat
-                FROM UsuariosPorChat
-                WHERE id_usuario = ${req.body.id_usuario}
+            SELECT id_chat
+            FROM UsuariosPorChat
+            WHERE id_usuario = ${req.body.id_usuario}
             )
             AND u.ID != ${req.body.id_usuario}
+            AND (u.nombre != "" AND u.nombre IS NOT NULL)
         `);
 
         console.log("RESULTADO:", resultado);
@@ -208,26 +209,27 @@ app.post("/agregarChat", async function (req, res) {
         let chatId;
 
         if (req.body.es_grupo == 1) {
+
             // Insertar el grupo
             const resultado = await realizarQuery(`
-        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
-        VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
-      `);
+                INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
+                VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
+            `);
 
             chatId = resultado.insertId;
 
             // Insertar al creador del grupo
             await realizarQuery(`
-        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
-        VALUES (${chatId}, ${req.body.id_usuario})
-      `);
+            INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+            VALUES (${chatId}, ${req.body.id_usuario})
+            `);
 
             // Insertar a los demás usuarios por mail
             for (const mail of req.body.mails) {
                 const usuarios = await realizarQuery(`
           SELECT ID FROM Usuarios WHERE usuario_mail = '${mail}'
         `);
-                if (usuarios.length > 0) {
+                if (usuarios.length > 0 && usuarios[0].ID != req.body.id_usuario) {
                     const userId = usuarios[0].ID;
                     await realizarQuery(`
             INSERT INTO UsuariosPorChat (id_chat, id_usuario)
@@ -235,6 +237,8 @@ app.post("/agregarChat", async function (req, res) {
           `);
                 }
             }
+
+            console.log(chatId)
 
         } else {
             // Insertar chat individual (campos vacíos salvo es_grupo = 0)
@@ -255,14 +259,21 @@ app.post("/agregarChat", async function (req, res) {
         INSERT INTO UsuariosPorChat (id_chat, id_usuario)
         VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
       `);
+
+
+            }
+            console.log(chatId)
+
         }
 
         res.send({ ok: true, id_chat: chatId });
+
     } catch (error) {
         res.status(500).send({
             ok: false,
             mensaje: "Error en el servidor",
             error: error.message,
+            
         });
     }
 });
