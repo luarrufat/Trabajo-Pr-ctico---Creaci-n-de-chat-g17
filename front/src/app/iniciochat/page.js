@@ -179,45 +179,121 @@ export default function ChatPage() {
   }
 
   // --- Crear chats / grupos ---
-  async function crearChatIndividual() {
-    if (!mail.trim()) return;
-    const datos = { es_grupo: 0, mail, id_usuario: localStorage.getItem("ID") };
-    try {
-      const response = await fetch("http://localhost:4000/agregarChat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos),
-      });
-      const result = await response.json();
-      if (result.ok) traerChats();
-    } catch (error) {
-      console.error(error);
-    }
-  }
+   async function crearGrupo() {
+        let mailsLimpios = validacionGrupo();
+        
+        const datos = {
+            es_grupo: 1,
+            nombre,
+            foto,
+            descripcion_grupo: descripcion,
+            id_usuario: localStorage.getItem("ID"), // usuario logueado
+            mails: mailsLimpios
+        };
 
-  async function crearGrupo() {
-    const mailsLimpios = mails.filter((m) => m.trim() !== "");
-    const datos = {
-      es_grupo: 1,
-      nombre: nombreGrupo,
-      foto,
-      descripcion_grupo: descripcion,
-      id_usuario: localStorage.getItem("ID"),
-      mails: mailsLimpios,
-    };
-    try {
-      const response = await fetch("http://localhost:4000/agregarChat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos),
-      });
-      const result = await response.json();
-      console.log(result);
-    } catch (error) {
-      console.error("Error al crear grupo:", error);
-    }
-  }
+        console.log("Datos del grupo:", datos);
 
+        if (nombre.trim() == "") {
+            alert("Por favor, complete el nombre del grupo.");
+        } else if (mailsLimpios.length > 0) {
+            const response = await fetch("http://localhost:4000/agregarChat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos),
+            });
+    
+            const result = await response.json();
+            console.log(result);
+        } else {
+            alert("Por favor, agregue al menos un usuario al grupo.");
+        }
+
+    }
+
+    async function crearChatIndividual() {
+        const datos = {
+            es_grupo: 0,
+            mail: mail,
+            id_usuario: localStorage.getItem("ID"), // usuario logueado
+        };
+
+        try {
+            const response = await fetch("http://localhost:4000/agregarChat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos),
+            });
+            const result = await response.json();
+            if (result.ok) traerChats();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function obtenerDatos() {
+        let datos = {
+            es_grupo: es_grupo,
+            foto: foto,
+            nombre: nombre,
+            descripcion_grupo: descripcion_grupo
+        }
+        agregarChat(datos)
+    }
+
+    async function agregarChat(datos) {
+        console.log("Click en botón")
+        try {
+            response = await fetch("http://localhost:4000/agregarChat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(datos),
+            });
+            console.log(response)
+            let result = await response.json()
+            console.log(result)
+
+        } catch (error) {
+            console.log("Error", error);
+        }
+    }
+
+    function handleCheckbox(event) {
+        setEsGrupo(event.target.checked)
+    }
+
+
+    function agregarInput() {
+        setMails([...mails, ""]);
+    }
+
+    function actualizarMail(index, value) {
+        const copia = [...mails];
+        copia[index] = value;
+        setMails(copia);
+    }
+
+    function validacionGrupo() {
+        // limpiar mails con un for
+        let mailsLimpios = [];
+        for (let i = 0; i < mails.length; i++) {
+            if (mails[i].trim() !== "") {
+                mailsLimpios.push(mails[i]); // agrego solo los que no están vacíos
+            }
+        }
+
+        const datos = {
+            es_grupo: 1,
+            nombre,
+            foto,
+            descripcion_grupo: descripcion,
+            id_usuario: localStorage.getItem("ID"),
+            mails: mailsLimpios,
+        };
+
+        return mailsLimpios;
+      }
   function eliminarUsuario() {
     const datos = {
       id_chat: chatActivo.ID,
