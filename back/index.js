@@ -205,78 +205,72 @@ app.post("/traerUsuarios", async function (req, res) {
 //agregar chats
 
 app.post("/agregarChat", async function (req, res) {
-    try {
-        let chatId;
+  try {
+    let chatId;
 
-        if (req.body.es_grupo == 1) {
+    if (req.body.es_grupo == 1) {
+      // Insertar el grupo
+      const resultado = await realizarQuery(`
+        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
+        VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
+      `);
 
-            // Insertar el grupo
-            const resultado = await realizarQuery(`
-                INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
-                VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
-            `);
+      chatId = resultado.insertId;
 
-            chatId = resultado.insertId;
+      // Insertar al creador del grupo
+      await realizarQuery(`
+        INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+        VALUES (${chatId}, ${req.body.id_usuario})
+      `);
 
-            // Insertar al creador del grupo
-            await realizarQuery(`
-            INSERT INTO UsuariosPorChat (id_chat, id_usuario)
-            VALUES (${chatId}, ${req.body.id_usuario})
-            `);
-
-            // Insertar a los demás usuarios por mail
-            for (const mail of req.body.mails) {
-                const usuarios = await realizarQuery(`
+      // Insertar a los demás usuarios por mail
+      for (const mail of req.body.mails) {
+        const usuarios = await realizarQuery(`
           SELECT ID FROM Usuarios WHERE usuario_mail = '${mail}'
         `);
-                if (usuarios.length > 0 && usuarios[0].ID != req.body.id_usuario) {
-                    const userId = usuarios[0].ID;
-                    await realizarQuery(`
+        if (usuarios.length > 0 && usuarios[0].ID != req.body.id_usuario) {
+          const userId = usuarios[0].ID;
+          await realizarQuery(`
             INSERT INTO UsuariosPorChat (id_chat, id_usuario)
             VALUES (${chatId}, ${userId})
           `);
-                }
-            }
+        }
+      }
+      console.log(chatId);
 
-            console.log(chatId)
-
-        } else {
-            // Insertar chat individual (campos vacíos salvo es_grupo = 0)
-            const resultado = await realizarQuery(`
+    } else {
+      // Insertar chat individual (campos vacíos salvo es_grupo = 0)
+      const resultado = await realizarQuery(`
         INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
         VALUES (0, NULL, NULL, NULL)
       `);
-            chatId = resultado.insertId;
+      chatId = resultado.insertId;
 
-            // obtener id del otro usuario por mail
-            const usuarios = await realizarQuery(`
+      // obtener id del otro usuario por mail
+      const usuarios = await realizarQuery(`
         SELECT ID FROM Usuarios WHERE usuario_mail = '${req.body.mail}'
       `);
-            const otroUsuarioId = usuarios[0].ID;
+      const otroUsuarioId = usuarios[0].ID;
 
-            // vincular usuarios al chat
-            await realizarQuery(`
+      // vincular usuarios al chat
+      await realizarQuery(`
         INSERT INTO UsuariosPorChat (id_chat, id_usuario)
         VALUES (${chatId}, ${req.body.id_usuario}), (${chatId}, ${otroUsuarioId})
       `);
-
-
-            }
-            console.log(chatId)
-
-        }
-
-        res.send({ ok: true, id_chat: chatId });
-
-    } catch (error) {
-        res.status(500).send({
-            ok: false,
-            mensaje: "Error en el servidor",
-            error: error.message,
-            
-        });
     }
+
+    console.log(chatId);
+    res.send({ ok: true, id_chat: chatId });
+
+  } catch (error) {
+    res.status(500).send({
+      ok: false,
+      mensaje: "Error en el servidor",
+      error: error.message,
+    });
+  }
 });
+
 
 //traer contactos
 app.post('/contacto', async (req, res) => {
@@ -305,7 +299,7 @@ app.post('/contacto', async (req, res) => {
     } catch (error) {
         res.status(500).send({
             ok: false,
-            mensaje: "Error en el servido ASDRAAAAAAA",
+            mensaje: "Error en el servidor",
             error: error.message,
         });
     }
