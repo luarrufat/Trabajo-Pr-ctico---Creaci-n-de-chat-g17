@@ -2,19 +2,16 @@
 .mensajes {
   background-color: #6f82ee;
   color: white;
-  padding: 10px 14px;
-  border-radius: 16px 16px 0 16px;
-  font-size: 16px;
+   font-size: 16px;
   margin: 8px 0;
   /*modificaciones chat gpt*/
-  /*display: inline-block;  /* 🔑 Se adapta al contenido *//*
+   /*display: inline-block;  /* 🔑 Se adapta al contenido *//*
   display: flex;
   max-width: 70%;
-  /* 🔑 No se pasa de cierto ancho *//*
+    /* 🔑 No se pasa de cierto ancho *//*
   word-wrap: break-word;
-  /* 🔑 Si el texto es muy largo, salta de línea *//*
+   /* 🔑 Si el texto es muy largo, salta de línea *//*
 }*/
-
 .mensajeyo {
   background-color: #6f82ee;
   align-self: flex-end;
@@ -48,7 +45,7 @@
 .mensajeyo .hora {
   color: rgba(255, 255, 255, 0.7);
   /* clarito sobre azul */
-}
+  }
 
 .mensajes {
   background-color: #6f82ee;

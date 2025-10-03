@@ -1,8 +1,7 @@
-"use client"
 import clsx from "clsx"
 import styles from "@/componentes/Mensajes.module.css"
 
-export default function Mensajes({ lado, texto, hora, nombre }) {
+export default function Mensajes({ lado, texto, hora }) {
     return (
         <div
             className={clsx(styles.mensajes, {
@@ -18,4 +17,3 @@ export default function Mensajes({ lado, texto, hora, nombre }) {
         </div>
     );
 }
-
