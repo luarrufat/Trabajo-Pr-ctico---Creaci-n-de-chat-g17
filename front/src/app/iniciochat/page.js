@@ -27,6 +27,7 @@ export default function ChatPage() {
   const mensajesEndRef = useRef(null);
   const [nombreAutor, setNombreAutor] = useState([]);
 
+
   const todosLosContactos = [...contacts, ...nombreChat];
 
   // SOCKET: recibir mensajes
@@ -89,16 +90,16 @@ export default function ChatPage() {
       console.error("Error al traer chats:", error);
     }
   }
-
   async function traerNombres() {
     try {
       const response = await fetch("http://localhost:4000/traerUsuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
+        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
       });
       const data = await response.json();
-      setNombreChat(data.usuarios ?? []);
+      if (data.ok && data.usuarios) setNombreChat(data.usuarios);
+      else setNombreChat([]);
     } catch (error) {
       console.error("Error al traer nombres:", error);
       setNombreChat([]);
@@ -131,7 +132,7 @@ export default function ChatPage() {
         const mensajesFormateados = data.mensajes.map((m) => ({
           texto: m.contenido ?? "",
           autor: m.id_usuario.toString(),
-          nombre: m.nombre,   
+          nombre: m.nombre,
           chatId: m.id_chat,
         }));
         setMensajes(mensajesFormateados);
@@ -179,121 +180,73 @@ export default function ChatPage() {
   }
 
   // --- Crear chats / grupos ---
-   async function crearGrupo() {
-        let mailsLimpios = validacionGrupo();
-        
-        const datos = {
-            es_grupo: 1,
-            nombre,
-            foto,
-            descripcion_grupo: descripcion,
-            id_usuario: localStorage.getItem("ID"), // usuario logueado
-            mails: mailsLimpios
-        };
+  async function crearChatIndividual() {
+    const datos = {
+      es_grupo: 0,
+      mail: mail,
+      id_usuario: localStorage.getItem("ID"), // usuario logueado
+    };
 
-        console.log("Datos del grupo:", datos);
+    if (mail.trim() == "") {
+      alert("Por favor, complete el mail del contacto.");
+      return;
+    }
+    try {
+      const response = await fetch("http://localhost:4000/agregarChat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      });
+      const result = await response.json();
+      if (result.ok) traerChats();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-        if (nombre.trim() == "") {
-            alert("Por favor, complete el nombre del grupo.");
-        } else if (mailsLimpios.length > 0) {
-            const response = await fetch("http://localhost:4000/agregarChat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datos),
-            });
+  function validacionGrupo() {
+    // ... tu lógica de validación
+    // mails seleccionados, por ejemplo
+    const mails = ["ejemplo@mail.com", "otro@mail.com"]; 
     
-            const result = await response.json();
-            console.log(result);
-        } else {
-            alert("Por favor, agregue al menos un usuario al grupo.");
-        }
+    return mails; // 👈 asegurate de devolver array
+  }
+  
 
+  async function crearGrupo() {
+    let mailsLimpios = validacionGrupo();
+    const datos = {
+      es_grupo: 1,
+      foto,
+      nombre: nombreGrupo,   // 👈 acá usás nombreGrupo
+      descripcion_grupo: descripcion,
+      id_usuario: localStorage.getItem("ID"),
+      mails: mailsLimpios
+    };
+  
+    console.log("Datos del grupo:", datos);
+  
+    if (nombreGrupo.trim() === "") {
+      alert("Por favor, complete el nombre del grupo.");
+      return;
     }
-
-    async function crearChatIndividual() {
-        const datos = {
-            es_grupo: 0,
-            mail: mail,
-            id_usuario: localStorage.getItem("ID"), // usuario logueado
-        };
-
-        try {
-            const response = await fetch("http://localhost:4000/agregarChat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datos),
-            });
-            const result = await response.json();
-            if (result.ok) traerChats();
-        } catch (error) {
-            console.error(error);
-        }
+  
+    if (mailsLimpios.length > 0) {
+      const response = await fetch("http://localhost:4000/agregarChat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos),
+      });
+  
+      const result = await response.json();
+      console.log(result);
+    } else {
+      alert("Por favor, agregue al menos un usuario al grupo.");
     }
-
-    async function obtenerDatos() {
-        let datos = {
-            es_grupo: es_grupo,
-            foto: foto,
-            nombre: nombre,
-            descripcion_grupo: descripcion_grupo
-        }
-        agregarChat(datos)
-    }
-
-    async function agregarChat(datos) {
-        console.log("Click en botón")
-        try {
-            response = await fetch("http://localhost:4000/agregarChat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(datos),
-            });
-            console.log(response)
-            let result = await response.json()
-            console.log(result)
-
-        } catch (error) {
-            console.log("Error", error);
-        }
-    }
-
-    function handleCheckbox(event) {
-        setEsGrupo(event.target.checked)
-    }
+  }
+  
 
 
-    function agregarInput() {
-        setMails([...mails, ""]);
-    }
-
-    function actualizarMail(index, value) {
-        const copia = [...mails];
-        copia[index] = value;
-        setMails(copia);
-    }
-
-    function validacionGrupo() {
-        // limpiar mails con un for
-        let mailsLimpios = [];
-        for (let i = 0; i < mails.length; i++) {
-            if (mails[i].trim() !== "") {
-                mailsLimpios.push(mails[i]); // agrego solo los que no están vacíos
-            }
-        }
-
-        const datos = {
-            es_grupo: 1,
-            nombre,
-            foto,
-            descripcion_grupo: descripcion,
-            id_usuario: localStorage.getItem("ID"),
-            mails: mailsLimpios,
-        };
-
-        return mailsLimpios;
-      }
   function eliminarUsuario() {
     const datos = {
       id_chat: chatActivo.ID,
@@ -322,10 +275,12 @@ export default function ChatPage() {
       console.error("Error al eliminar contacto:", error);
     }
   }
-function agregarInput() {
+
+  function agregarInput() {
     setMails([...mails, ""]);
   }
-   function actualizarMail(index, value) {
+
+  function actualizarMail(index, value) {
     const copia = [...mails];
     copia[index] = value;
     setMails(copia);
@@ -368,11 +323,11 @@ function agregarInput() {
           {esGrupo ? (
             <>
               <Input
-              placeholder="Nombre del grupo"
+                placeholder="Nombre del grupo"
                 onChange={(e) => setNombreGrupo(e.target.value)}
                 color="registro"
               />
-               <Input
+              <Input
                 placeholder="Foto (URL)"
                 onChange={(e) => setFoto(e.target.value)}
                 color="registro"
@@ -413,7 +368,8 @@ function agregarInput() {
         <header className={styles.chatHeader}>
           {/*{chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> && <Boton1 texto="ELiminar" color="wpp"></Boton1> : <h2>Selecciona un chat</h2>}*/}
           {chatActivo ? (<> <h2>⚪ {chatActivo.nombre}</h2> <Boton1 texto="Eliminar" color="eliminar" onClick={eliminarUsuario} /></>) : <h2>Selecciona un chat</h2>}
-          </header>
+
+        </header>
 
         {/* Lista de mensajes */}
         <div className={styles.mensajesContainer}>
@@ -425,7 +381,7 @@ function agregarInput() {
               nombre={msg.nombre}
               hora={msg.hora}
             />
-            ))}
+          ))}
           <div ref={mensajesEndRef} />
         </div>
 

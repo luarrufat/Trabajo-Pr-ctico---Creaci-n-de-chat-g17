@@ -1,13 +1,13 @@
 var express = require('express'); //Tipo de servidor: Express
 var bodyParser = require('body-parser'); //Convierte los JSON
 var cors = require('cors');
-const session = require('express-session');				// Para el manejo de las variables de sesión
+const session = require('express-session');             // Para el manejo de las variables de sesión
 const path = require('path');
 const { realizarQuery } = require('./modulos/mysql');
 const { Console } = require('console');
 
 var app = express(); //Inicializo express
-const port = process.env.PORT || 4000;								// Puerto por el que estoy ejecutando la página Web
+const port = process.env.PORT || 4000;                              // Puerto por el que estoy ejecutando la página Web
 
 // Asegurate de exponer la carpeta front para acceder a las imágenes
 app.use(express.static(path.join(__dirname, './front'))); // o './front' si estás adentro del mismo nivel
@@ -28,8 +28,8 @@ const io = require('socket.io')(server, {
     cors: {
         // IMPORTANTE: REVISAR PUERTO DEL FRONTEND
         origin: ["http://localhost:3000", "http://localhost:3001"], // Permitir el origen localhost:3000
-        methods: ["GET", "POST", "PUT", "DELETE"],  	// Métodos permitidos
-        credentials: true                           	// Habilitar el envío de cookies
+        methods: ["GET", "POST", "PUT", "DELETE"],      // Métodos permitidos
+        credentials: true                               // Habilitar el envío de cookies
     }
 });
 
@@ -138,7 +138,7 @@ app.post('/registro', async function (req, res) {
         if (vector.length == 0) {
             realizarQuery(`
                 INSERT INTO Usuarios (usuario_mail, password, nombre, foto_perfil) VALUES
-                    ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','${req.body.foto}');
+                    ('${req.body.usuario_mail}','${req.body.password}','${req.body.nombre}','');
             `)
 
         } else {
@@ -159,12 +159,12 @@ app.post("/chats", async function (req, res) {
     try {
         console.log(req.body)
         const resultado = await realizarQuery(`
-            SSELECT Chats.ID , Chats.nombre, Chats.foto
-           FROM Chats
-           INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
-           WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
-           AND (Chats.es_grupo = 1 AND Chats.nombre IS NOT NULL AND Chats.nombre != "")
-       `);
+            SELECT Chats.ID , Chats.nombre, Chats.foto
+            FROM Chats
+            INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
+            WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
+
+        `);
         res.send(resultado);
     } catch (error) {
         res.send({
@@ -180,16 +180,15 @@ app.post("/traerUsuarios", async function (req, res) {
         console.log("BODY:", req.body);
 
         const resultado = await realizarQuery(`
-            SELECT u.ID, u.nombre, upc.id_chat, u.foto_perfil
+            SELECT u.ID, u.nombre, upc.id_chat
             FROM Usuarios u
             INNER JOIN UsuariosPorChat upc ON upc.id_usuario = u.ID
             WHERE upc.id_chat IN (
-            SELECT id_chat
-            FROM UsuariosPorChat
-            WHERE id_usuario = ${req.body.id_usuario}
+                SELECT id_chat
+                FROM UsuariosPorChat
+                WHERE id_usuario = ${req.body.id_usuario}
             )
             AND u.ID != ${req.body.id_usuario}
-            AND (u.nombre != "" AND u.nombre IS NOT NULL)
         `);
 
         console.log("RESULTADO:", resultado);
@@ -209,17 +208,20 @@ app.post("/agregarChat", async function (req, res) {
         let chatId;
 
         if (req.body.es_grupo == 1) {
-            // Insertar el grupo
+            const nombre = req.body.nombre ?? "Grupo sin nombre"; 
             // Insertar el grupo
             const resultado = await realizarQuery(`
-        INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
+        
+                INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
                 VALUES (1, '${req.body.foto}', '${req.body.nombre}', '${req.body.descripcion_grupo}')
             `);
+
             chatId = resultado.insertId;
 
             // Insertar al creador del grupo
             await realizarQuery(`
-           INSERT INTO UsuariosPorChat (id_chat, id_usuario)
+        
+            INSERT INTO UsuariosPorChat (id_chat, id_usuario)
             VALUES (${chatId}, ${req.body.id_usuario})
             `);
 
@@ -228,7 +230,7 @@ app.post("/agregarChat", async function (req, res) {
                 const usuarios = await realizarQuery(`
           SELECT ID FROM Usuarios WHERE usuario_mail = '${mail}'
         `);
-                   if (usuarios.length > 0 && usuarios[0].ID != req.body.id_usuario) {
+                if (usuarios.length > 0 && usuarios[0].ID != req.body.id_usuario) {
                     const userId = usuarios[0].ID;
                     await realizarQuery(`
             INSERT INTO UsuariosPorChat (id_chat, id_usuario)
@@ -237,8 +239,10 @@ app.post("/agregarChat", async function (req, res) {
                 }
             }
 
+            console.log(chatId)
+
         } else {
-             console.log(chatId)
+            // Insertar chat individual (campos vacíos salvo es_grupo = 0)
             const resultado = await realizarQuery(`
         INSERT INTO Chats (es_grupo, foto, nombre, descripcion_grupo)
         VALUES (0, NULL, NULL, NULL)
