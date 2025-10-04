@@ -67,7 +67,7 @@ export default function ChatPage() {
   useEffect(() => {
     traerChats();
     traerNombres();
-    cargarUsuarios();
+    cargar();
   }, []);
 
   // Scroll automático al último mensaje
@@ -78,47 +78,84 @@ export default function ChatPage() {
   }, [mensajes]);
 
   async function traerChats() {
-    try {
-      const response = await fetch("http://localhost:4000/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
-      });
-      const data = await response.json();
-      setContacts(data);
-    } catch (error) {
-      console.error("Error al traer chats:", error);
-    }
+  try {
+    const response = await fetch("http://localhost:4000/chats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
+    });
+    const data = await response.json();
+    console.log("traerChats ->", data);
+
+    // 👇 si data no es array, guardamos [] para no romper
+    setContacts(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Error al traer chats:", error);
+    setContacts([]); // así nunca queda undefined
   }
-  async function traerNombres() {
-    try {
-      const response = await fetch("http://localhost:4000/traerUsuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
-      });
-      const data = await response.json();
-      if (data.ok && data.usuarios) setNombreChat(data.usuarios);
-      else setNombreChat([]);
-    } catch (error) {
-      console.error("Error al traer nombres:", error);
+}
+
+async function traerNombres() {
+  try {
+    const response = await fetch("http://localhost:4000/traerUsuarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
+    });
+    const data = await response.json();
+    console.log("traerUsuarios ->", data);
+
+    // 👇 acá miramos si data.usuarios es array
+    if (data && Array.isArray(data.usuarios)) {
+      setNombreChat(data.usuarios);
+    } else if (Array.isArray(data)) {
+      // por si directamente devuelve array
+      setNombreChat(data);
+    } else {
       setNombreChat([]);
     }
+  } catch (error) {
+    console.error("Error al traer nombres:", error);
+    setNombreChat([]);
   }
+}
 
-  async function cargarUsuarios() {
-    try {
-      const res = await fetch("http://localhost:4000/traerUsuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
-      });
-      const data = await res.json();
-      setNombreChat(data ?? []);
-    } catch (err) {
-      console.error("Error cargarUsuarios:", err);
+
+
+  async function cargar() {
+  try {
+    const res = await fetch("http://localhost:4000/traerUsuarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
+    });
+
+    let data = await res.json();
+    console.log("📩 traerUsuarios (cargar) ->", data);
+
+    // 👇 elegimos array correcto
+    let usuarios = Array.isArray(data)
+      ? data
+      : Array.isArray(data.usuarios)
+      ? data.usuarios
+      : [];
+
+    for (let i = 0; i < usuarios.length; i++) {
+      for (let j = 0; j < usuarios.length; j++) {
+        if (usuarios[i].nombre == usuarios[j].nombre && i != j) {
+          usuarios.splice(j, 1);
+        }
+      }
     }
+    console.log("Filtrado: ", usuarios);
+    setNombreChat(usuarios);
+  } catch (err) {
+    console.error("Error traerUsuarios:", err);
+    setNombreChat([]);
   }
+}
+
+
 
   async function traerMensajesChat(chatId) {
     try {
@@ -204,13 +241,24 @@ export default function ChatPage() {
     }
   }
 
-  function validacionGrupo() {
-    // ... tu lógica de validación
-    // mails seleccionados, por ejemplo
-    const mails = ["ejemplo@mail.com", "otro@mail.com"]; 
-    
-    return mails; // 👈 asegurate de devolver array
-  }
+   function validacionGrupo() {
+        // limpiar mails con un for
+        let mailsLimpios = [];
+        for (let i = 0; i < mails.length; i++) {
+            if (mails[i].trim() !== "") {
+                mailsLimpios.push(mails[i]); // agrego solo los que no están vacíos
+            }
+        }
+
+        const datos = {
+            es_grupo: 1,
+            nombre,
+            foto,
+            descripcion_grupo: descripcion,
+            id_usuario: localStorage.getItem("ID"),
+            mails: mailsLimpios,
+        };
+   } 
   
 
   async function crearGrupo() {
@@ -291,6 +339,7 @@ export default function ChatPage() {
   }
 
   return (
+    <>
     <div className={styles.chatContainer}>
       {/* Panel de contactos */}
       <div className={styles.contactos}>
@@ -299,9 +348,10 @@ export default function ChatPage() {
             <li key={`${u.id_chat ?? u.ID}-${index}`}>
               <Contacto
                 nombre={u.nombre}
+                foto={u.foto}
                 color="contactos"
                 onClick={() => {
-                  const chatSeleccionado = { ID: u.id_chat ?? u.ID, nombre: u.nombre };
+                  const chatSeleccionado = { ID: u.id_chat ?? u.ID, nombre: u.nombre, foto: u.foto};
                   setChatActivo(chatSeleccionado);
                   traerMensajesChat(chatSeleccionado.ID);
                 }}
@@ -401,5 +451,6 @@ export default function ChatPage() {
         )}
       </section>
     </div>
-  );
+  </>
+  )
 }

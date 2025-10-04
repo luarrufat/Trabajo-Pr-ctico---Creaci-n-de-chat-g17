@@ -163,7 +163,8 @@ app.post("/chats", async function (req, res) {
             FROM Chats
             INNER JOIN UsuariosPorChat ON UsuariosPorChat.id_chat = Chats.ID
             WHERE UsuariosPorChat.id_usuario = "${req.body.id_usuario}"
-
+            AND (Chats.es_grupo = 1 AND Chats.nombre IS NOT NULL AND Chats.nombre != "")
+            AND (Chats.es_grupo = 0 AND Chats.nombre IS NOT NULL AND Chats.nombre != "")
         `);
         res.send(resultado);
     } catch (error) {
@@ -180,15 +181,16 @@ app.post("/traerUsuarios", async function (req, res) {
         console.log("BODY:", req.body);
 
         const resultado = await realizarQuery(`
-            SELECT u.ID, u.nombre, upc.id_chat
+            SELECT u.ID, u.nombre, upc.id_chat, u.foto_perfil
             FROM Usuarios u
             INNER JOIN UsuariosPorChat upc ON upc.id_usuario = u.ID
             WHERE upc.id_chat IN (
-                SELECT id_chat
-                FROM UsuariosPorChat
-                WHERE id_usuario = ${req.body.id_usuario}
+            SELECT id_chat
+            FROM UsuariosPorChat
+            WHERE id_usuario = ${req.body.id_usuario}
             )
             AND u.ID != ${req.body.id_usuario}
+            AND (u.nombre != "" AND u.nombre IS NOT NULL)
         `);
 
         console.log("RESULTADO:", resultado);
