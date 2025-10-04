@@ -26,8 +26,6 @@ export default function ChatPage() {
   const [descripcion, setDescripcion] = useState("");
   const mensajesEndRef = useRef(null);
   const [nombreAutor, setNombreAutor] = useState([]);
-
-
   const todosLosContactos = [...contacts, ...nombreChat];
 
   // SOCKET: recibir mensajes
