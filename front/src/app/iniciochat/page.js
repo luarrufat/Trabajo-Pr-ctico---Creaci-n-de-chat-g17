@@ -76,82 +76,82 @@ export default function ChatPage() {
   }, [mensajes]);
 
   async function traerChats() {
-  try {
-    const response = await fetch("http://localhost:4000/chats", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
-    });
-    const data = await response.json();
-    console.log("traerChats ->", data);
+    try {
+      const response = await fetch("http://localhost:4000/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) }),
+      });
+      const data = await response.json();
+      console.log("traerChats ->", data);
 
-    // 👇 si data no es array, guardamos [] para no romper
-    setContacts(Array.isArray(data) ? data : []);
-  } catch (error) {
-    console.error("Error al traer chats:", error);
-    setContacts([]); // así nunca queda undefined
+      // 👇 si data no es array, guardamos [] para no romper
+      setContacts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error al traer chats:", error);
+      setContacts([]); // así nunca queda undefined
+    }
   }
-}
 
-async function traerNombres() {
-  try {
-    const response = await fetch("http://localhost:4000/traerUsuarios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
-    });
-    const data = await response.json();
-    console.log("traerUsuarios ->", data);
+  async function traerNombres() {
+    try {
+      const response = await fetch("http://localhost:4000/traerUsuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: parseInt(localStorage.getItem("ID")) })
+      });
+      const data = await response.json();
+      console.log("traerUsuarios ->", data);
 
-    // 👇 acá miramos si data.usuarios es array
-    if (data && Array.isArray(data.usuarios)) {
-      setNombreChat(data.usuarios);
-    } else if (Array.isArray(data)) {
-      // por si directamente devuelve array
-      setNombreChat(data);
-    } else {
+      // 👇 acá miramos si data.usuarios es array
+      if (data && Array.isArray(data.usuarios)) {
+        setNombreChat(data.usuarios);
+      } else if (Array.isArray(data)) {
+        // por si directamente devuelve array
+        setNombreChat(data);
+      } else {
+        setNombreChat([]);
+      }
+    } catch (error) {
+      console.error("Error al traer nombres:", error);
       setNombreChat([]);
     }
-  } catch (error) {
-    console.error("Error al traer nombres:", error);
-    setNombreChat([]);
   }
-}
 
 
 
   async function cargar() {
-  try {
-    const res = await fetch("http://localhost:4000/traerUsuarios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
-    });
+    try {
+      const res = await fetch("http://localhost:4000/traerUsuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_usuario: localStorage.getItem("ID") }),
+      });
 
-    let data = await res.json();
-    console.log("📩 traerUsuarios (cargar) ->", data);
+      let data = await res.json();
+      console.log("📩 traerUsuarios (cargar) ->", data);
 
-    // 👇 elegimos array correcto
-    let usuarios = Array.isArray(data)
-      ? data
-      : Array.isArray(data.usuarios)
-      ? data.usuarios
-      : [];
+      // 👇 elegimos array correcto
+      let usuarios = Array.isArray(data)
+        ? data
+        : Array.isArray(data.usuarios)
+          ? data.usuarios
+          : [];
 
-    for (let i = 0; i < usuarios.length; i++) {
-      for (let j = 0; j < usuarios.length; j++) {
-        if (usuarios[i].nombre == usuarios[j].nombre && i != j) {
-          usuarios.splice(j, 1);
+      for (let i = 0; i < usuarios.length; i++) {
+        for (let j = 0; j < usuarios.length; j++) {
+          if (usuarios[i].nombre == usuarios[j].nombre && i != j) {
+            usuarios.splice(j, 1);
+          }
         }
       }
+      console.log("Filtrado: ", usuarios);
+      setNombreChat(usuarios);
+    } catch (err) {
+      console.error("Error traerUsuarios:", err);
+      setNombreChat([]);
     }
-    console.log("Filtrado: ", usuarios);
-    setNombreChat(usuarios);
-  } catch (err) {
-    console.error("Error traerUsuarios:", err);
-    setNombreChat([]);
   }
-}
 
 
 
@@ -239,58 +239,55 @@ async function traerNombres() {
     }
   }
 
-   function validacionGrupo() {
-        // limpiar mails con un for
-        let mailsLimpios = [];
-        for (let i = 0; i < mails.length; i++) {
-            if (mails[i].trim() !== "") {
-                mailsLimpios.push(mails[i]); // agrego solo los que no están vacíos
-            }
-        }
+  function validacionGrupo() {
+    let mailsLimpios = [];
+    for (let i = 0; i < mails.length; i++) {
+      if (mails[i].trim() !== "") {
+        mailsLimpios.push(mails[i]);
+      }
+    }
+    return mailsLimpios;
+  }
 
-        const datos = {
-            es_grupo: 1,
-            nombre,
-            foto,
-            descripcion_grupo: descripcion,
-            id_usuario: localStorage.getItem("ID"),
-            mails: mailsLimpios,
-        };
-   } 
-  
+
 
   async function crearGrupo() {
     let mailsLimpios = validacionGrupo();
+
     const datos = {
       es_grupo: 1,
       foto,
-      nombre: nombreGrupo,   // 👈 acá usás nombreGrupo
+      nombre: nombreGrupo,
       descripcion_grupo: descripcion,
       id_usuario: localStorage.getItem("ID"),
       mails: mailsLimpios
     };
-  
+
     console.log("Datos del grupo:", datos);
-  
+
     if (nombreGrupo.trim() === "") {
       alert("Por favor, complete el nombre del grupo.");
       return;
     }
-  
+
     if (mailsLimpios.length > 0) {
       const response = await fetch("http://localhost:4000/agregarChat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
       });
-  
+
       const result = await response.json();
-      console.log(result);
+      console.log("Resultado crear grupo ->", result);
+      if (result.ok) {
+        traerChats();
+      }
     } else {
       alert("Por favor, agregue al menos un usuario al grupo.");
     }
   }
-  
+
+
 
 
   function eliminarUsuario() {
@@ -338,117 +335,117 @@ async function traerNombres() {
 
   return (
     <>
-    <div className={styles.chatContainer}>
-      {/* Panel de contactos */}
-      <div className={styles.contactos}>
-        <ul>
-          {todosLosContactos.map((u, index) => (
-            <li key={`${u.id_chat ?? u.ID}-${index}`}>
-              <Contacto
-                nombre={u.nombre}
-                foto={u.foto}
-                color="contactos"
-                onClick={() => {
-                  const chatSeleccionado = { ID: u.id_chat ?? u.ID, nombre: u.nombre, foto: u.foto};
-                  setChatActivo(chatSeleccionado);
-                  traerMensajesChat(chatSeleccionado.ID);
-                }}
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <div className={styles.chatContainer}>
+        {/* Panel de contactos */}
+        <div className={styles.contactos}>
+          <ul>
+            {todosLosContactos.map((u, index) => (
+              <li key={`${u.id_chat ?? u.ID}-${index}`}>
+                <Contacto
+                  nombre={u.nombre}
+                  foto={u.foto}
+                  color="contactos"
+                  onClick={() => {
+                    const chatSeleccionado = { ID: u.id_chat ?? u.ID, nombre: u.nombre, foto: u.foto };
+                    setChatActivo(chatSeleccionado);
+                    traerMensajesChat(chatSeleccionado.ID);
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      {/* Popup para crear chat o grupo */}
-      <Popup trigger={<BotonRedondo texto="+" />} modal>
-        <div className="popupContainer">
-          <p>{esGrupo ? "Crear un nuevo grupo" : "Crear un nuevo chat"}</p>
-          <label>
-            <Input type="checkbox" onChange={toggleGrupo} />
-            {esGrupo ? "Desea crear un chat individual?" : "Desea crear un grupo?"}
-          </label>
+        {/* Popup para crear chat o grupo */}
+        <Popup trigger={<BotonRedondo texto="+" />} modal>
+          <div className="popupContainer">
+            <p>{esGrupo ? "Crear un nuevo grupo" : "Crear un nuevo chat"}</p>
+            <label>
+              <Input type="checkbox" onChange={toggleGrupo} />
+              {esGrupo ? "Desea crear un chat individual?" : "Desea crear un grupo?"}
+            </label>
 
-          {esGrupo ? (
-            <>
-              <Input
-                placeholder="Nombre del grupo"
-                onChange={(e) => setNombreGrupo(e.target.value)}
-                color="registro"
-              />
-              <Input
-                placeholder="Foto (URL)"
-                onChange={(e) => setFoto(e.target.value)}
-                color="registro"
-              />
-              <Input
-                placeholder="Descripción"
-                onChange={(e) => setDescripcion(e.target.value)}
-                color="registro"
-              />
-              {mails.map((m, i) => (
+            {esGrupo ? (
+              <>
                 <Input
-                  key={`mail-${i}`}
-                  type="text"
-                  placeholder="Correo del usuario"
-                  value={m}
-                  onChange={(e) => actualizarMail(i, e.target.value)}
+                  placeholder="Nombre del grupo"
+                  onChange={(e) => setNombreGrupo(e.target.value)}
                   color="registro"
                 />
-              ))}
-              <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
-              <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
-            </>
-          ) : (
-            <>
-              <Input
-                placeholder="Mail del contacto"
-                onChange={(e) => setMail(e.target.value)}
-                color="registro"
+                <Input
+                  placeholder="Foto (URL)"
+                  onChange={(e) => setFoto(e.target.value)}
+                  color="registro"
+                />
+                <Input
+                  placeholder="Descripción"
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  color="registro"
+                />
+                {mails.map((m, i) => (
+                  <Input
+                    key={`mail-${i}`}
+                    type="text"
+                    placeholder="Correo del usuario"
+                    value={m}
+                    onChange={(e) => actualizarMail(i, e.target.value)}
+                    color="registro"
+                  />
+                ))}
+                <Boton1 onClick={agregarInput} texto="Agregar otro usuario" color="wpp" />
+                <Boton1 onClick={crearGrupo} texto="Crear grupo" color="wpp" />
+              </>
+            ) : (
+              <>
+                <Input
+                  placeholder="Mail del contacto"
+                  onChange={(e) => setMail(e.target.value)}
+                  color="registro"
+                />
+                <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
+              </>
+            )}
+          </div>
+        </Popup>
+
+        {/* Chat principal */}
+        <section className={styles.chat}>
+          <header className={styles.chatHeader}>
+            {/*{chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> && <Boton1 texto="ELiminar" color="wpp"></Boton1> : <h2>Selecciona un chat</h2>}*/}
+            {chatActivo ? (<> <h2>⚪ {chatActivo.nombre}</h2> <Boton1 texto="Eliminar" color="eliminar" onClick={eliminarUsuario} /></>) : <h2>Selecciona un chat</h2>}
+
+          </header>
+
+          {/* Lista de mensajes */}
+          <div className={styles.mensajesContainer}>
+            {mensajes.map((msg, index) => (
+              <Mensajes
+                key={index}
+                lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
+                texto={msg.texto}
+                nombre={msg.nombre}
+                hora={msg.hora}
               />
-              <Boton1 onClick={crearChatIndividual} texto="Agregar chat" color="wpp" />
-            </>
+            ))}
+            <div ref={mensajesEndRef} />
+          </div>
+
+          {/* Input de mensaje */}
+          {chatActivo && (
+            <footer className={styles.chatInput}>
+              <div className={styles.inputContainer}>
+                <input
+                  type="text"
+                  placeholder="Escribe tu mensaje..."
+                  value={nuevoMensaje}
+                  onChange={(e) => setNuevoMensaje(e.target.value)}
+                />
+                <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
+              </div>
+            </footer>
           )}
-        </div>
-      </Popup>
-
-      {/* Chat principal */}
-      <section className={styles.chat}>
-        <header className={styles.chatHeader}>
-          {/*{chatActivo ? <h2>⚪ {chatActivo.nombre}</h2> && <Boton1 texto="ELiminar" color="wpp"></Boton1> : <h2>Selecciona un chat</h2>}*/}
-          {chatActivo ? (<> <h2>⚪ {chatActivo.nombre}</h2> <Boton1 texto="Eliminar" color="eliminar" onClick={eliminarUsuario} /></>) : <h2>Selecciona un chat</h2>}
-
-        </header>
-
-        {/* Lista de mensajes */}
-        <div className={styles.mensajesContainer}>
-          {mensajes.map((msg, index) => (
-            <Mensajes
-              key={index}
-              lado={msg.autor === localStorage.getItem("ID") ? "mensajeyo" : "mensajeotro"}
-              texto={msg.texto}
-              nombre={msg.nombre}
-              hora={msg.hora}
-            />
-          ))}
-          <div ref={mensajesEndRef} />
-        </div>
-
-        {/* Input de mensaje */}
-        {chatActivo && (
-          <footer className={styles.chatInput}>
-            <div className={styles.inputContainer}>
-              <input
-                type="text"
-                placeholder="Escribe tu mensaje..."
-                value={nuevoMensaje}
-                onChange={(e) => setNuevoMensaje(e.target.value)}
-              />
-              <Boton1 texto="Enviar" color="wpp" onClick={enviarMensajeRoom} />
-            </div>
-          </footer>
-        )}
-      </section>
-    </div>
-  </>
+        </section>
+      </div>
+    </>
   )
 }
